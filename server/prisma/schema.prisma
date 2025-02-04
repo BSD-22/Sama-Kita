@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id          Int         @id @default(autoincrement())
+  email       String      @unique
+  password    String
+  name        String?
+  OTP         OTP[]
+  Renter      Renter[]
+  Property    Property[]
+  Operator    Operator[]
+}
+
+model OTP {
+  id            Int                 @id @default(autoincrement())
+  code          String
+  user          User                @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  userId        Int         
+  expiredDate   DateTime
+}
+
+model Property {
+  id                Int             @id @default(autoincrement())
+  propertyName      String
+  dueDate           String
+  userId            Int             
+  propertyImage     String
+  user              User            @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  Operator          Operator[]
+  Renter            Renter[]
+  Room              Room[]
+}
+
+model Operator {
+  id                Int             @id @default(autoincrement())
+  operatorName      String
+  user              User?            @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  userId            Int?
+  propertyId        Int?             @unique
+  property          Property?       @relation(fields: [propertyId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+}
+
+model Room {
+  id                Int             @id @default(autoincrement())
+  typeName          String       
+  price             Int
+  roomImage         String?
+  Area              Int
+  Renter            Renter[]
+  propertyId        Int
+  property          Property        @relation(fields: [propertyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  totalRooms        Int
+}
+
+model RenterExpenses {
+  id                  Int             @id @default(autoincrement())
+  renterId            Int             
+  renter              Renter          @relation(fields: [renterId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  maintenanceType     String
+  serviceDate         DateTime
+  serviceDescription  String?
+  servicePrice        Int
+  serviceInvoice      String
+  lastPaymentDate     DateTime
+}
+
+model Renter {
+  id                Int                   @id @default(autoincrement())
+  user              User                  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  userId            Int
+  renterName        String
+  renterEmail       String
+  renterPhone       String
+  ktpNumber         String                // ditampilin hanya untuk pemilik bukan ke operator
+  joinDate          DateTime
+  leaveDate         DateTime
+  hasLeaved         Boolean               @default(false)
+  room              Room                  @relation(fields: [roomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  roomId            Int
+  property          Property              @relation(fields: [propertyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  propertyId        Int
+  depositAmount     Int
+  RenterExpenses    RenterExpenses[]
+  RenterTransaction RenterTransaction[]
+}
+
+model RenterTransaction {
+  id                Int                 @id @default(autoincrement())
+  renterId          Int
+  renter            Renter              @relation(fields: [renterId], references: [id])
+  orderId           String              @unique
+  paymentStatus     Boolean             @default(false)
+  amount            Int
+  createdAt      DateTime @default(now())
+}
+
+
