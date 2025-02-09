@@ -11,11 +11,14 @@ import MaintenancePage from "./views/MaintenancePage";
 import AddRenterExpenses from "./views/AddRenterExpenses";
 import EditRoomPage from "./views/EditRoomPage";
 import LandingPage from "./views/LandingPage";
+import AddPropertyPage from "./views/AddPropertyPage";
+import PropertyListPage from "./views/PropertyListPage";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route
           path="/landing"
           element={<LandingPage />}
@@ -28,7 +31,10 @@ export default function App() {
           path="/login/otp"
           element={<OTPLoginPage />}
         />
+
+        {/* Protected Routes */}
         <Route element={<BaseLayout />}>
+          {/* Dashboard Routes */}
           <Route
             path="/"
             element={<DashboardPage />}
@@ -37,19 +43,20 @@ export default function App() {
             path="/graph"
             element={<GraphPerformancePage />}
           />
+
+          {/* Property Routes */}
           <Route
-            path="/expenses/maintenance"
-            element={<MaintenancePage />}
+            path="/property"
+            element={<PropertyListPage />}
           />
           <Route
-            path="/expenses/add"
-            element={<AddRenterExpenses />}
+            path="/property/add"
+            element={<AddPropertyPage />}
           />
           <Route
             path="/property/:id"
             element={<PropertyDetail />}
           />
-          <Route />
           <Route
             path="/property/:id/renters"
             element={<RentersDetail />}
@@ -61,6 +68,16 @@ export default function App() {
           <Route
             path="/property/:propertyId/edit/:roomId"
             element={<EditRoomPage />}
+          />
+
+          {/* Expenses Routes */}
+          <Route
+            path="/expenses/maintenance"
+            element={<MaintenancePage />}
+          />
+          <Route
+            path="/expenses/add"
+            element={<AddRenterExpenses />}
           />
         </Route>
       </Routes>

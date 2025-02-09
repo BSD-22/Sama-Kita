@@ -34,17 +34,12 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
 
-                {/* Dynamically render other breadcrumbs based on path */}
                 {pathParts.map((part: string, index: number) => {
-                  // Construct the breadcrumb path
                   const breadcrumbPath = `/${pathParts.slice(0, index + 1).join("/")}`;
 
-                  // Handle special cases for routes like "property" or dynamic ids
                   let displayText = part.charAt(0).toUpperCase() + part.slice(1);
-
-                  // Check for property route and prevent linking
                   if (part === "property") {
-                    displayText = "Property"; // Just display "Property" as a label
+                    displayText = "Property";
                     return (
                       <React.Fragment key={index}>
                         <BreadcrumbItem>
@@ -55,9 +50,8 @@ export default function Page({ children }: { children: React.ReactNode }) {
                     );
                   }
 
-                  // Check for dynamic IDs like ":id" and prevent linking
                   if (part.match(/^\d+$/)) {
-                    displayText = part; // Just display the ID as label
+                    displayText = part;
                     return (
                       <React.Fragment key={index}>
                         <BreadcrumbItem>

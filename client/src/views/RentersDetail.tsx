@@ -1,4 +1,3 @@
-import Page from "@/app/dashboard/page";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -150,7 +149,7 @@ export default function RentersDetail() {
   };
 
   return (
-    <Page>
+    <div>
       <Table
         className="w-full"
         style={{ tableLayout: "fixed" }}>
@@ -228,6 +227,6 @@ export default function RentersDetail() {
           </div>
         </div>
       )}
-    </Page>
+    </div>
   );
 }
