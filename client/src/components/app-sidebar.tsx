@@ -30,7 +30,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navMain: [
       {
         title: "Dashboard",
-        url: "#",
+        url: "/",
         icon: LayoutDashboard,
         isActive: true,
         items: [
@@ -46,7 +46,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: "Properties",
-        url: "/properties",
+        url: "/property",
         icon: Bot,
         items: [],
       },
@@ -91,10 +91,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         if (item.title === "Properties") {
           return {
             ...item,
-            items: fetchedProperties.map((property: Property) => ({
-              title: property.propertyName,
-              url: `/property/${property.id}`,
-            })),
+            items: [
+              ...fetchedProperties.map((property: Property) => ({
+                title: property.propertyName,
+                url: `/property/${property.id}`,
+              })),
+            ],
           };
         }
         return item;

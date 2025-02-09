@@ -1,4 +1,3 @@
-import Page from "@/app/dashboard/page";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAppDispatch, useAppSelector } from "@/store/hook";
@@ -72,7 +71,7 @@ export default function MaintenancePage() {
   };
 
   return (
-    <Page>
+    <div>
       <Button
         onClick={() => navigate("/expenses/add")}
         className="mx-auto flex justify-start mb-5">
@@ -137,6 +136,6 @@ export default function MaintenancePage() {
           </div>
         </div>
       )}
-    </Page>
+    </div>
   );
 }

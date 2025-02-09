@@ -1,18 +1,17 @@
-import { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet } from "react-router";
+import { Sidebar } from "@/components/Sidebar";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export default function BaseLayout() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!localStorage.access_token) {
-      navigate("/login");
-    }
-  }, [navigate]);
-
   return (
-    <>
-      <Outlet />
-    </>
+    <div className="flex h-screen">
+      <Sidebar />
+      <main className="flex-1 overflow-auto bg-gray-50">
+        <Breadcrumbs />
+        <div className="px-6">
+          <Outlet />
+        </div>
+      </main>
+    </div>
   );
 }

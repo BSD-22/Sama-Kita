@@ -24,10 +24,25 @@ export default class propertyController {
           userId,
         },
         include: {
-          Room: true,
-          Operator: true,
+          Room: {
+            select: {
+              id: true,
+              typeName: true,
+              totalRooms: true,
+            },
+          },
+          Operator: {
+            select: {
+              id: true,
+              operatorName: true,
+            },
+          },
+        },
+        orderBy: {
+          id: 'desc',
         },
       });
+
       if (!properties) throw { name: 'NotFoundError' };
 
       res.status(200).json(properties);
@@ -342,6 +357,56 @@ export default class propertyController {
     } catch (err) {
       console.log(err);
       next(err);
+    }
+  }
+
+  static async addProperty(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { propertyName, dueDate } = req.body;
+      const userId = req.loginInfo?.userId;
+
+      if (!userId) {
+        throw { name: 'AuthenticationError', message: 'User not authenticated' };
+      }
+
+      if (!propertyName || !dueDate) {
+        throw { name: 'ValidationError', message: 'Property name and due date are required' };
+      }
+
+      // Handle image upload
+      if (!req.file) {
+        throw { name: 'ValidationError', message: 'Property image is required' };
+      }
+
+      const imgFile = req.file.buffer.toString('base64');
+
+      const uploadedImage = await imagekit.upload({
+        file: imgFile,
+        fileName: req.file.originalname,
+      });
+
+      const propertyImageUrl = uploadedImage.url;
+
+      const property = await prisma.property.create({
+        data: {
+          propertyName,
+          dueDate,
+          propertyImage: propertyImageUrl,
+          userId,
+        },
+        include: {
+          Room: true,
+          Operator: true,
+        },
+      });
+
+      res.status(201).json({
+        message: 'Property created successfully',
+        data: property,
+      });
+    } catch (error) {
+      console.error('Error in addProperty:', error);
+      next(error);
     }
   }
 }

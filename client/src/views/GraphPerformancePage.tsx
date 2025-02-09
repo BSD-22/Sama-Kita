@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
-import Page from "@/app/dashboard/page";
 import { useAppDispatch, useAppSelector } from "@/store/hook";
 import { fetchRenters } from "@/store/renters";
 import { fetchProperties } from "@/store/properties";
@@ -139,69 +138,67 @@ export default function Dashboard() {
   };
 
   return (
-    <Page>
-      <div className="min-h-screen text-gray-900 px-6 pb-10 pt-3">
-        <h2 className="mb-5 text-3xl font-extrabold text-gray-800">Dashboard</h2>
+    <div className="min-h-screen text-gray-900 px-6 pb-10 pt-3">
+      <h2 className="mb-5 text-3xl font-extrabold text-gray-800">Dashboard</h2>
 
-        {/* Period switcher */}
-        <div className="mb-6">
-          {["oneMonth", "sixMonths", "oneYear"].map((period) => (
-            <button
-              key={period}
-              className={`mr-4 px-4 py-2 rounded-md ${selectedPeriod === period ? "bg-black text-white" : "bg-gray-200"}`}
-              onClick={() => handlePeriodChange(period as "oneMonth" | "sixMonths" | "oneYear")}>
-              {period.replace(/([A-Z])/g, " $1").trim()}
-            </button>
-          ))}
+      {/* Period switcher */}
+      <div className="mb-6">
+        {["oneMonth", "sixMonths", "oneYear"].map((period) => (
+          <button
+            key={period}
+            className={`mr-4 px-4 py-2 rounded-md ${selectedPeriod === period ? "bg-black text-white" : "bg-gray-200"}`}
+            onClick={() => handlePeriodChange(period as "oneMonth" | "sixMonths" | "oneYear")}>
+            {period.replace(/([A-Z])/g, " $1").trim()}
+          </button>
+        ))}
+      </div>
+
+      {/* Top metrics section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="p-6 bg-white rounded-lg shadow">
+          <h3 className="text-sm text-gray-500">Total Revenue</h3>
+          <p className="text-3xl font-bold">Rp. {revenue.toLocaleString()}</p>
+          <p className="text-green-600 text-sm mt-2">{calculatePercentageChange(revenue, previousRevenue)}</p>
         </div>
-
-        {/* Top metrics section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="p-6 bg-white rounded-lg shadow">
-            <h3 className="text-sm text-gray-500">Total Revenue</h3>
-            <p className="text-3xl font-bold">Rp. {revenue.toLocaleString()}</p>
-            <p className="text-green-600 text-sm mt-2">{calculatePercentageChange(revenue, previousRevenue)}</p>
-          </div>
-          <div className="p-6 bg-white rounded-lg shadow">
-            <h3 className="text-sm text-gray-500">Nett Profit</h3>
-            <p className="text-3xl font-bold">Rp. {nettProfit.toLocaleString()}</p>
-            <p className="text-green-600 text-sm mt-2">{calculatePercentageChange(nettProfit, previousNettProfit)}</p>
-          </div>
-          <div className="p-6 bg-white rounded-lg shadow">
-            <h3 className="text-sm text-gray-500">Average Occupancy</h3>
-            <p className="text-3xl font-bold">{averageOccupancyRate}%</p>
-            <p className="text-gray-500 text-sm mt-2">Total Properties: {properties.length}</p>
-          </div>
+        <div className="p-6 bg-white rounded-lg shadow">
+          <h3 className="text-sm text-gray-500">Nett Profit</h3>
+          <p className="text-3xl font-bold">Rp. {nettProfit.toLocaleString()}</p>
+          <p className="text-green-600 text-sm mt-2">{calculatePercentageChange(nettProfit, previousNettProfit)}</p>
         </div>
-
-        {/* Middle section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="col-span-2 p-6 bg-white rounded-lg shadow">
-            <Bar
-              data={barData}
-              options={barOptions}
-            />
-          </div>
-          <div className="p-6 bg-white rounded-lg shadow">
-            <h3 className="text-lg font-bold mb-4">Recent Sales</h3>
-            <ul className="space-y-4">
-              {recentSales.map((sale, index) => (
-                <li
-                  key={index}
-                  className="flex items-center justify-between">
-                  <div>
-                    <p className="font-bold">{sale.renterName}</p>
-                    <p className={`text-sm ${sale.paymentStatus ? "text-green-600" : "text-red-500"}`}>{sale.paymentStatus ? "Completed" : "Pending"}</p>
-                  </div>
-                  <p className={`font-bold ${sale.paymentStatus ? "text-green-600" : "text-gray-500"}`}>
-                    {sale.paymentStatus ? `+Rp. ${sale.amount.toLocaleString()}` : `Rp. ${sale.amount.toLocaleString()}`}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="p-6 bg-white rounded-lg shadow">
+          <h3 className="text-sm text-gray-500">Average Occupancy</h3>
+          <p className="text-3xl font-bold">{averageOccupancyRate}%</p>
+          <p className="text-gray-500 text-sm mt-2">Total Properties: {properties.length}</p>
         </div>
       </div>
-    </Page>
+
+      {/* Middle section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="col-span-2 p-6 bg-white rounded-lg shadow">
+          <Bar
+            data={barData}
+            options={barOptions}
+          />
+        </div>
+        <div className="p-6 bg-white rounded-lg shadow">
+          <h3 className="text-lg font-bold mb-4">Recent Sales</h3>
+          <ul className="space-y-4">
+            {recentSales.map((sale, index) => (
+              <li
+                key={index}
+                className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold">{sale.renterName}</p>
+                  <p className={`text-sm ${sale.paymentStatus ? "text-green-600" : "text-red-500"}`}>{sale.paymentStatus ? "Completed" : "Pending"}</p>
+                </div>
+                <p className={`font-bold ${sale.paymentStatus ? "text-green-600" : "text-gray-500"}`}>
+                  {sale.paymentStatus ? `+Rp. ${sale.amount.toLocaleString()}` : `Rp. ${sale.amount.toLocaleString()}`}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }

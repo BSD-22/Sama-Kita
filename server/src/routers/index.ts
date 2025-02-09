@@ -17,10 +17,12 @@ router.post('/user', authController.getUserByEmail);
 router.post('/llm', llmController.getResponsePublic);
 
 router.use(authentication);
+
 router.get('/logout', authController.handleLogout);
 router.get('/all-data', propertyController.getAllData);
 router.get('/response-graph-performance', llmController.getPropertySummary);
 router.get('/properties', propertyController.getPropertyByUser);
+router.post('/property', upload.single('propertyImage'), propertyController.addProperty);
 router.get('/renters', propertyController.getRentersByProperty);
 router.post('/renters', upload.single('invoice'), propertyController.addRentersExpenses);
 router.get('/renter/:id', propertyController.getRenterById);
@@ -28,8 +30,6 @@ router.delete('/renter/:id', propertyController.deleteRenterById);
 router.get('/occupancies', propertyController.getOcuppancies);
 router.post('/midtrans-getaway-payment', midtransController.midtransPayment);
 router.get('/check-payment-status/:orderId/renter/:renterId', midtransController.checkPaymentStatus);
-// router.get('/renters/:id', propertyController.getRenterById);
-// router.post('/transaction-list-midtrans', midtransController.getHistoryList);
 router.get('/property/:id', propertyController.getPropertyById);
 router.get('/property/rooms/:roomId', propertyController.getRoomById);
 router.post('/property/:propertyId/add', upload.single('roomImage'), propertyController.addRoomByPropertyId);

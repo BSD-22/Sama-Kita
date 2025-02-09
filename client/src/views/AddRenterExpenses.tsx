@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Page from "@/app/dashboard/page";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -94,7 +93,7 @@ export default function AddRenterExpenses() {
   };
 
   return (
-    <Page>
+    <div>
       <h1 className="text-2xl font-bold text-center mb-6">Add Renter Expenses</h1>
       <form
         onSubmit={handleSubmit}
@@ -188,6 +187,6 @@ export default function AddRenterExpenses() {
           Submit
         </Button>
       </form>
-    </Page>
+    </div>
   );
 }
