@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import Page from "@/app/dashboard/page";
 import { useParams } from "react-router";
 
 type HandleSubmit = (
@@ -89,83 +88,81 @@ export default function RoomsForm({ handleSubmit, room }: { handleSubmit: Handle
   }, [room]);
 
   return (
-    <Page>
-      <div className="flex justify-center items-center h-full">
-        <Card className="w-full max-w-lg shadow-2xl">
-          <CardHeader>
-            <CardTitle>{room ? "Edit Room" : "Add a New Room"}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form
-              onSubmit={(e) => handleSubmit(e, formData)}
-              className="space-y-4">
-              <div>
-                <Label htmlFor="typeName">Room Name</Label>
-                <Input
-                  name="typeName"
-                  type="text"
-                  placeholder="Enter room name"
-                  value={formData.typeName}
-                  onChange={(e) => handleChange("typeName", e)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="price">Price (Rp.)</Label>
-                <Input
-                  name="price"
-                  type="number"
-                  placeholder="Enter price per night"
-                  value={formData.price}
-                  onChange={(e) => handleChange("price", e)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="Area">Area (m²)</Label>
-                <Input
-                  name="Area"
-                  type="number"
-                  placeholder="Enter room area"
-                  value={formData.Area}
-                  onChange={(e) => handleChange("Area", e)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="totalRooms">Total Rooms</Label>
-                <Input
-                  name="totalRooms"
-                  type="number"
-                  placeholder="Enter total rooms"
-                  value={formData.totalRooms}
-                  onChange={(e) => handleChange("totalRooms", e)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="roomImage">Room Image</Label>
-                {formData.existingRoomImage && (
-                  <div className="mb-2">
-                    <img
-                      src={formData.existingRoomImage}
-                      alt="Current Room"
-                      className="h-32 w-32 object-cover"
-                    />
-                  </div>
-                )}
-                <Input
-                  name="roomImage"
-                  type="file"
-                  onChange={(e) => handleChange("roomImage", e)}
-                />
-                <small className="text-sm text-muted-foreground">(Optional) Upload a new image for this room</small>
-              </div>
-              <Button
-                type="submit"
-                className="w-full">
-                {room ? "Update Room" : "Add Room"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </Page>
+    <div className="flex justify-center items-center h-full">
+      <Card className="w-full max-w-lg shadow-2xl">
+        <CardHeader>
+          <CardTitle>{room ? "Edit Room" : "Add a New Room"}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form
+            onSubmit={(e) => handleSubmit(e, formData)}
+            className="space-y-4">
+            <div>
+              <Label htmlFor="typeName">Room Name</Label>
+              <Input
+                name="typeName"
+                type="text"
+                placeholder="Enter room name"
+                value={formData.typeName}
+                onChange={(e) => handleChange("typeName", e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="price">Price (Rp.)</Label>
+              <Input
+                name="price"
+                type="number"
+                placeholder="Enter price per night"
+                value={formData.price}
+                onChange={(e) => handleChange("price", e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="Area">Area (m²)</Label>
+              <Input
+                name="Area"
+                type="number"
+                placeholder="Enter room area"
+                value={formData.Area}
+                onChange={(e) => handleChange("Area", e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="totalRooms">Total Rooms</Label>
+              <Input
+                name="totalRooms"
+                type="number"
+                placeholder="Enter total rooms"
+                value={formData.totalRooms}
+                onChange={(e) => handleChange("totalRooms", e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="roomImage">Room Image</Label>
+              {formData.existingRoomImage && (
+                <div className="mb-2">
+                  <img
+                    src={formData.existingRoomImage}
+                    alt="Current Room"
+                    className="h-32 w-32 object-cover"
+                  />
+                </div>
+              )}
+              <Input
+                name="roomImage"
+                type="file"
+                onChange={(e) => handleChange("roomImage", e)}
+              />
+              <small className="text-sm text-muted-foreground">(Optional) Upload a new image for this room</small>
+            </div>
+            <Button
+              type="submit"
+              className="w-full">
+              {room ? "Update Room" : "Add Room"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
