@@ -63,43 +63,33 @@ export default class authController {
 
       if (!user) throw { name: 'LoginError' };
 
-      const findUserOtp = await prisma.oTP.findFirst({
+      await prisma.oTP.deleteMany({
+        where: {
+          expiredDate: {
+            lt: new Date(),
+          },
+        },
+      });
+
+      await prisma.oTP.deleteMany({
         where: {
           userId: user.id,
         },
       });
 
-      if (findUserOtp) throw { name: 'OTPExist' };
-
       let userOtp: userOtp;
       await prisma.$transaction(async (tx) => {
-        try {
-          userOtp = await tx.oTP.create({
-            data: {
-              userId: user.id,
-              code: String(Math.floor(Math.random() * 900000) + 100000), // get 6 digits random number (toString)
-              expiredDate: new Date(Date.now() + 1000 * 60 * 1), // one minute after current time
-            },
-          });
+        userOtp = await tx.oTP.create({
+          data: {
+            userId: user.id,
+            code: String(Math.floor(Math.random() * 900000) + 100000),
+            expiredDate: new Date(Date.now() + 1000 * 60 * 1),
+          },
+        });
 
-          // sendOtpEmail(user.email, userOtp.code);
-        } catch (err) {
-          console.log(err);
-        }
+        // Uncomment this when ready to send real emails
+        // await sendOtpEmail(user.email, userOtp.code);
       });
-
-      setTimeout(async () => {
-        try {
-          await prisma.oTP.deleteMany({
-            where: {
-              code: userOtp?.code,
-              userId: user.id,
-            },
-          });
-        } catch (err) {
-          console.log(err);
-        }
-      }, 60 * 1000);
 
       res.status(200).json({
         otp: userOtp?.code,

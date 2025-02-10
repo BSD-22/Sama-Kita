@@ -30,11 +30,12 @@ export function Sidebar({ className }: SidebarProps) {
       ],
     },
     {
-      category: "Properties",
+      category: "Management",
       icon: <Bot className="w-4 h-4" />,
       items: [
-        { name: "Property List", path: "/property" },
-        { name: "Add Property", path: "/property/add" },
+        { name: "Properties", path: "/properties" },
+        { name: "Rooms", path: "/rooms" },
+        { name: "Renters", path: "/renters" },
       ],
     },
     {

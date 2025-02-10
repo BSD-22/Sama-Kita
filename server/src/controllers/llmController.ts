@@ -45,7 +45,20 @@ export default class llmController {
 
   static async getPropertySummary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const [oneMonthRevenue, oneMonthExpenses, oneMonthOccupancy, oneMonthRecentSales, sixMonthRevenue, sixMonthExpenses, sixMonthOccupancy, sixMonthRecentSales, oneYearRevenue, oneYearExpenses, oneYearOccupancy, oneYearRecentSales] = await prisma.$transaction([
+      const [
+        oneMonthRevenue,
+        oneMonthExpenses,
+        oneMonthOccupancy,
+        oneMonthRecentSales,
+        sixMonthRevenue,
+        sixMonthExpenses,
+        sixMonthOccupancy,
+        sixMonthRecentSales,
+        oneYearRevenue,
+        oneYearExpenses,
+        oneYearOccupancy,
+        oneYearRecentSales,
+      ] = await prisma.$transaction([
         // 1 month data - Total Revenue (exclude transactions with paymentStatus: false)
         prisma.renterTransaction.aggregate({
           _sum: { amount: true },
@@ -111,7 +124,13 @@ export default class llmController {
         }),
       ]);
 
-      const processData = async (revenueData: { _sum: { amount: number | null } }, expenseData: { _sum: { servicePrice: number | null } }, occupancyData: number, salesData: { createdAt: Date; amount: number; renter: { renterName: string }; paymentStatus: boolean }[], period: 'oneMonth' | 'sixMonths' | 'oneYear') => {
+      const processData = async (
+        revenueData: { _sum: { amount: number | null } },
+        expenseData: { _sum: { servicePrice: number | null } },
+        occupancyData: number,
+        salesData: { createdAt: Date; amount: number; renter: { renterName: string }; paymentStatus: boolean }[],
+        period: 'oneMonth' | 'sixMonths' | 'oneYear',
+      ) => {
         const totalRevenue = revenueData._sum.amount || 0;
         const totalExpenses = expenseData._sum.servicePrice || 0;
 
@@ -136,9 +155,27 @@ export default class llmController {
         };
       };
 
-      const oneMonth = await processData(oneMonthRevenue, oneMonthExpenses, oneMonthOccupancy, oneMonthRecentSales, 'oneMonth');
-      const sixMonths = await processData(sixMonthRevenue, sixMonthExpenses, sixMonthOccupancy, sixMonthRecentSales, 'sixMonths');
-      const oneYear = await processData(oneYearRevenue, oneYearExpenses, oneYearOccupancy, oneYearRecentSales, 'oneYear');
+      const oneMonth = await processData(
+        oneMonthRevenue,
+        oneMonthExpenses,
+        oneMonthOccupancy,
+        oneMonthRecentSales,
+        'oneMonth',
+      );
+      const sixMonths = await processData(
+        sixMonthRevenue,
+        sixMonthExpenses,
+        sixMonthOccupancy,
+        sixMonthRecentSales,
+        'sixMonths',
+      );
+      const oneYear = await processData(
+        oneYearRevenue,
+        oneYearExpenses,
+        oneYearOccupancy,
+        oneYearRecentSales,
+        'oneYear',
+      );
 
       res.status(200).json({
         oneMonth,

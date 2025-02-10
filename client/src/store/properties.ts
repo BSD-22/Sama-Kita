@@ -6,12 +6,14 @@ import axios from "axios";
 interface CounterState<T> {
   properties: T;
   property: T | null;
+  isLoading: boolean;
 }
 
 // Define the initial state using that type
 const initialState: CounterState<[]> = {
   properties: [],
   property: null,
+  isLoading: false,
 };
 
 export const propertiesSlice = createSlice({
@@ -21,22 +23,28 @@ export const propertiesSlice = createSlice({
   reducers: {
     setProperties: (state, action: PayloadAction<[]>) => {
       state.properties = action.payload;
+      state.isLoading = false;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
     },
   },
 });
 
-export const { setProperties } = propertiesSlice.actions;
+export const { setProperties, setLoading } = propertiesSlice.actions;
 
 export default propertiesSlice.reducer;
 
 export const fetchProperties = () => {
   return async (dispatch: AppDispatch) => {
     try {
+      dispatch(setLoading(true));
       const { data } = await axios.get(`http://localhost:8080/properties`, { headers: { Authorization: `Bearer ${localStorage.access_token}` } });
 
       dispatch(setProperties(data));
     } catch (error) {
       console.log(error);
+      dispatch(setLoading(false));
     }
   };
 };

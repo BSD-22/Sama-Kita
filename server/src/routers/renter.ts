@@ -10,7 +10,7 @@ router.get('/:id', renterController.getRenterById);
 router.delete('/:id', renterController.deleteRenterById);
 
 // Front Desk Routes
-router.post('/add', renterController.addNewRenter);
+router.post('/add', renterController.createRenter);
 router.put('/:id/end-contract', renterController.endRenterContract);
 router.put('/:id/complete-payment', renterController.completeManualPayment);
 

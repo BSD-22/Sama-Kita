@@ -7,6 +7,7 @@ import propertyRoutes from './property';
 import renterRoutes from './renter';
 import paymentRoutes from './payment';
 import llmRoutes from './llm';
+import roomRoutes from './room';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use('/properties', propertyRoutes);
 router.use('/renters', renterRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/llm', llmRoutes);
+router.use('/rooms', roomRoutes);
 
 router.use(errorHandler);
 
