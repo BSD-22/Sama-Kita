@@ -7,6 +7,7 @@ import { baseUrl } from "@/constants/baseUrl";
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   // const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
   async function getUserByEmail() {
@@ -31,6 +32,7 @@ export default function LoginPage() {
       localStorage.setItem("email", email);
       navigate(`/login/otp`);
     } catch (error) {
+      setError("Invalid email");
       console.log(error);
     }
   }
@@ -41,6 +43,7 @@ export default function LoginPage() {
         <LoginForm
           handleLogin={handleLogin}
           setEmail={setEmail}
+          error={error}
         />
       </div>
     </div>

@@ -6,12 +6,14 @@ import axios from "axios";
 interface CounterState<T> {
   renters: T;
   renter: T | null;
+  isLoading: boolean;
 }
 
 // Define the initial state using that type
 const initialState: CounterState<[]> = {
   renters: [],
   renter: null,
+  isLoading: false,
 };
 
 export const renterSlice = createSlice({
@@ -21,22 +23,28 @@ export const renterSlice = createSlice({
   reducers: {
     setRenters: (state, action: PayloadAction<[]>) => {
       state.renters = action.payload;
+      state.isLoading = false;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
     },
   },
 });
 
-export const { setRenters } = renterSlice.actions;
+export const { setRenters, setLoading } = renterSlice.actions;
 
 export default renterSlice.reducer;
 
 export const fetchRenters = () => {
   return async (dispatch: AppDispatch) => {
     try {
+      dispatch(setLoading(true));
       const { data } = await axios.get(`http://localhost:8080/renters`, { headers: { Authorization: `Bearer ${localStorage.access_token}` } });
 
       dispatch(setRenters(data));
     } catch (error) {
       console.log(error);
+      dispatch(setLoading(false));
     }
   };
 };

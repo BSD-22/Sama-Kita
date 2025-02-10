@@ -27,6 +27,7 @@ export default class renterController {
           RenterExpenses: true,
           room: true,
           RenterTransaction: true,
+          individualRoom: true,
         },
       });
 
@@ -60,7 +61,11 @@ export default class renterController {
     }
   }
 
-  static async addRentersExpenses(req: Request<{ propertyId: string }, unknown, RenterExpenses>, res: Response, next: NextFunction) {
+  static async addRentersExpenses(
+    req: Request<{ propertyId: string }, unknown, RenterExpenses>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { renterId, serviceDate, serviceDescription, maintenanceType, servicePrice, lastPaymentDate } = req.body;
 
@@ -133,56 +138,54 @@ export default class renterController {
     }
   }
 
-  static async addNewRenter(req: Request, res: Response, next: NextFunction) {
+  static async createRenter(req: Request, res: Response, next: NextFunction) {
     try {
-      const { renterName, renterEmail, renterPhone, depositAmount, roomId } = req.body;
+      const renterData = req.body;
       const userId = req.loginInfo?.userId;
 
       if (!userId) throw { name: 'AuthenticationError' };
 
-      const roomDetails = await prisma.room.findUnique({
-        where: { id: +roomId },
-      });
+      // Add userId to renterData
+      const dataWithUser = {
+        ...renterData,
+        userId: Number(userId),
+        // Convert string dates to Date objects
+        joinDate: new Date(renterData.joinDate),
+        leaveDate: new Date(renterData.leaveDate),
+        // Ensure numeric fields are numbers
+        depositAmount: Number(renterData.depositAmount),
+        propertyId: Number(renterData.propertyId),
+        roomId: Number(renterData.roomId),
+        individualRoomId: Number(renterData.individualRoomId),
+      };
 
-      if (!roomDetails) throw { name: 'NotFoundError', message: 'Room not found' };
-
-      const availableRoom = await prisma.individualRoom.findFirst({
-        where: {
-          roomId: +roomId,
-          status: 'Available',
-        },
-      });
-
-      if (!availableRoom) throw { name: 'ValidationError', message: 'No available rooms of this type' };
-
+      // Create renter and update room status in a transaction
       const result = await prisma.$transaction(async (tx) => {
+        // Create the renter
         const renter = await tx.renter.create({
-          data: {
-            renterName,
-            renterEmail,
-            renterPhone,
-            depositAmount: +depositAmount,
-            userId: +userId,
-            roomId: +roomId,
-            individualRoomId: availableRoom.id,
-            propertyId: roomDetails.propertyId,
-            joinDate: new Date(),
-            leaveDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-            ktpNumber: '',
+          data: dataWithUser,
+          include: {
+            property: true,
+            individualRoom: true,
           },
         });
 
+        // Update individual room status to Rented
         await tx.individualRoom.update({
-          where: { id: availableRoom.id },
-          data: { status: 'Rented' },
+          where: {
+            id: Number(renterData.individualRoomId),
+          },
+          data: {
+            status: 'Rented',
+          },
         });
 
         return renter;
       });
 
       res.status(201).json(result);
-    } catch (err) {
-      next(err);
+    } catch (error) {
+      next(error);
     }
   }
 

@@ -1,8 +1,13 @@
 import axios from "axios";
 import { useNavigate } from "react-router";
-import RoomsForm from "@/components/ui/RoomsForm";
-import { useParams } from "react-router";
+import GeneralRoomsForm from "@/components/ui/GeneralRoomsForm";
 import { baseUrl } from "@/constants/baseUrl";
+import { useEffect, useState } from "react";
+
+type Property = {
+  id: number;
+  propertyName: string;
+};
 
 type FormData = {
   typeName: string;
@@ -13,9 +18,29 @@ type FormData = {
   propertyId: number;
 };
 
-export default function AddRoomPage() {
+export default function AddGeneralRoomPage() {
   const navigate = useNavigate();
-  const { propertyId } = useParams<{ propertyId: string }>();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const response = await axios.get(baseUrl + '/rooms/properties/list', {
+          headers: {
+            Authorization: `Bearer ${localStorage.access_token}`,
+          },
+        });
+        setProperties(response.data);
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, formData: FormData) => {
     e.preventDefault();
@@ -32,23 +57,27 @@ export default function AddRoomPage() {
     }
 
     try {
-      await axios.post(baseUrl + `/properties/${propertyId}/add`, formDataToSubmit, {
+      await axios.post(baseUrl + `/rooms`, formDataToSubmit, {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
-          "Content-Type": "multipart/form-data", // Required for file uploads
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      navigate(`/property/${propertyId}`);
+      navigate(`/rooms`);
     } catch (error) {
       console.log(error);
     }
   };
 
+  if (loading) {
+    return <div>Loading properties...</div>;
+  }
+
   return (
-    <RoomsForm
+    <GeneralRoomsForm
       handleSubmit={handleSubmit}
-      room={null}
+      properties={properties}
     />
   );
-}
+} 

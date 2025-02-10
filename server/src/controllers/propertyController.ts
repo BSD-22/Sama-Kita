@@ -85,7 +85,15 @@ export default class propertyController {
     }
   }
 
-  static async editRoomById(req: Request<{ propertyId: string; roomId: string }, unknown, { typeName: string; price: number; Area: number; totalRooms: number; existingRoomImage: string | null }>, res: Response, next: NextFunction) {
+  static async editRoomById(
+    req: Request<
+      { propertyId: string; roomId: string },
+      unknown,
+      { typeName: string; price: number; Area: number; totalRooms: number; existingRoomImage: string | null }
+    >,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { propertyId, roomId } = req.params;
       const { typeName, price, Area, totalRooms } = req.body;
@@ -132,7 +140,11 @@ export default class propertyController {
     }
   }
 
-  static async getRoomsByProperty(req: Request<{ propertyId: string }, unknown, unknown>, res: Response, next: NextFunction) {
+  static async getRoomsByProperty(
+    req: Request<{ propertyId: string }, unknown, unknown>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { propertyId } = req.params;
 
@@ -182,7 +194,15 @@ export default class propertyController {
     }
   }
 
-  static async addRoomByPropertyId(req: Request<{ propertyId: string }, unknown, { typeName: string; price: number; Area: number; totalRooms: number; roomImage: string }>, res: Response, next: NextFunction) {
+  static async addRoomByPropertyId(
+    req: Request<
+      { propertyId: string },
+      unknown,
+      { typeName: string; price: number; Area: number; totalRooms: number; roomImage: string }
+    >,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { propertyId } = req.params;
       const { typeName, price, Area, totalRooms } = req.body;
@@ -234,7 +254,11 @@ export default class propertyController {
     }
   }
 
-  static async getOcuppancies(req: Request<{ propertyId: string }, unknown, unknown>, res: Response, next: NextFunction) {
+  static async getOcuppancies(
+    req: Request<{ propertyId: string }, unknown, unknown>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const properties = await prisma.property.findMany({
         where: {

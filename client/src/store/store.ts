@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import renterReducer from "./renters";
 import propertyReducer from "./properties";
+import roomReducer from "./rooms";
 // ...
 
 export const store = configureStore({
   reducer: {
     renters: renterReducer,
     properties: propertyReducer,
+    rooms: roomReducer,
   },
 });
 

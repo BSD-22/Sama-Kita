@@ -11,9 +11,10 @@ import { baseUrl } from "@/constants/baseUrl";
 type LoginFormProps = {
   setEmail: React.Dispatch<React.SetStateAction<string>>;
   handleLogin: (e: React.FormEvent<HTMLFormElement>) => void;
+  error?: string;
 };
 
-export function LoginForm({ setEmail, handleLogin }: LoginFormProps) {
+export function LoginForm({ setEmail, handleLogin, error }: LoginFormProps) {
   const navigate = useNavigate();
 
   async function googleLogin(codeResponse: CredentialResponse) {
@@ -52,7 +53,9 @@ export function LoginForm({ setEmail, handleLogin }: LoginFormProps) {
                   id="email"
                   type="email"
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                  className={error ? "border-red-500" : ""}
                 />
+                {error && <p className="text-sm text-red-500">{error}</p>}
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">

@@ -5,7 +5,11 @@ import axios from 'axios';
 const prisma = new PrismaClient();
 
 export default class midtransController {
-  static async midtransPayment(req: Request<unknown, unknown, { renterId: number }>, res: Response, next: NextFunction) {
+  static async midtransPayment(
+    req: Request<unknown, unknown, { renterId: number }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const userId = req.loginInfo?.userId;
       const { renterId } = req.body;
@@ -61,7 +65,11 @@ export default class midtransController {
     }
   }
 
-  static async checkPaymentStatus(req: Request<{ orderId: string; renterId: number }, unknown, { orderId: string }>, res: Response, next: NextFunction) {
+  static async checkPaymentStatus(
+    req: Request<{ orderId: string; renterId: number }, unknown, { orderId: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { orderId, renterId } = req.params;
 
