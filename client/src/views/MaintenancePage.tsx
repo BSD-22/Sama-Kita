@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAppDispatch, useAppSelector } from "@/store/hook";
 import { fetchRenters } from "@/store/renters";
 import { useEffect, useState } from "react";
@@ -70,54 +69,67 @@ export default function MaintenancePage() {
     setIsModalOpen(false);
   };
 
+  // Add this helper function at the beginning of the component
+  const formatDate = (date: Date | string) => {
+    const d = new Date(date);
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  };
+
   return (
-    <div>
-      <Button
-        onClick={() => navigate("/expenses/add")}
-        className="mx-auto flex justify-start mb-5">
-        Add New Expenses
-      </Button>
-      <Table className="w-full px-4 py-6">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Property Name</TableHead>
-            <TableHead>Service Date</TableHead>
-            <TableHead>Renter Name</TableHead>
-            <TableHead>Room Type</TableHead>
-            <TableHead>Maintenance Type</TableHead>
-            <TableHead>Invoice</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Last Payment Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {renters.map((renter) =>
-            renter.RenterExpenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell>{renter.property.propertyName}</TableCell>
-                <TableCell>{new Date(expense.serviceDate).toLocaleDateString("id-ID")}</TableCell>
-                <TableCell>{renter.renterName}</TableCell>
-                <TableCell>{renter.room.typeName}</TableCell>
-                <TableCell>{expense.maintenanceType}</TableCell>
-                <TableCell>
-                  <button
-                    onClick={() => handleInvoiceClick(expense.serviceInvoice)}
-                    className="text-blue-500">
-                    View Invoice
-                  </button>
-                </TableCell>
-                <TableCell>
-                  {expense.servicePrice.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                  })}
-                </TableCell>
-                <TableCell>{new Date(expense.lastPaymentDate).toLocaleDateString("id-ID")}</TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+    <div className="p-4">
+      <div className="mb-6">
+        <Button
+          onClick={() => navigate("/expenses/add")}
+          className="w-full sm:w-auto">
+          Add New Maintenance
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {renters.map((renter) =>
+          renter.RenterExpenses.map((expense) => (
+            <div
+              key={expense.id}
+              className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold text-lg">{renter.property.propertyName}</h3>
+                  <span className="text-sm text-gray-500">{formatDate(expense.serviceDate)}</span>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-sm">
+                    <span className="font-medium">Renter:</span> {renter.renterName}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Room Type:</span> {renter.room.typeName}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Maintenance:</span> {expense.maintenanceType}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Price:</span>{" "}
+                    {expense.servicePrice.toLocaleString("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                    })}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Last Payment:</span> {formatDate(expense.lastPaymentDate)}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => handleInvoiceClick(expense.serviceInvoice)}
+                  className="mt-2 text-blue-500 hover:text-blue-700 text-sm font-medium">
+                  View Invoice
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
       {/* Modal to display the invoice image */}
       {isModalOpen && (

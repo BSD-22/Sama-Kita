@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { Bot, LayoutDashboard, SquareActivity, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bot, LayoutDashboard, SquareActivity, MessageCircle, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,12 @@ export function Sidebar({ className }: SidebarProps) {
   const userName = localStorage.getItem("name") || "User";
   const userEmail = localStorage.getItem("email") || "user@email.com";
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
+  };
 
   const menuItems = [
     {
@@ -96,16 +102,30 @@ export function Sidebar({ className }: SidebarProps) {
         </a>
       </div>
 
-      {/* User Profile Section */}
-      <div className="p-4 border-t mt-auto">
-        <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white shrink-0">SK</div>
-          {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{userName}</p>
-              <p className="text-xs text-gray-500 truncate">{userEmail}</p>
-            </div>
-          )}
+      {/* User Profile Section - Updated */}
+      <div className="border-t mt-auto">
+        <button
+          onClick={() => setIsProfileExpanded(!isProfileExpanded)}
+          className={cn("w-full p-4 hover:bg-gray-50 transition-colors", isProfileExpanded && "bg-gray-50")}>
+          <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white shrink-0">SK</div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{userName}</p>
+                <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+              </div>
+            )}
+          </div>
+        </button>
+
+        {/* Logout Button with Animation */}
+        <div className={cn("overflow-hidden transition-all duration-300 ease-in-out", isProfileExpanded ? "max-h-20 opacity-100" : "max-h-0 opacity-0")}>
+          <button
+            onClick={handleLogout}
+            className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
+            <LogOut className="w-4 h-4" />
+            {!isCollapsed && <span>Logout</span>}
+          </button>
         </div>
       </div>
     </div>

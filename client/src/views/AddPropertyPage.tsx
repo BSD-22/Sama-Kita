@@ -98,34 +98,43 @@ export default function AddPropertyPage() {
   };
 
   return (
-    <div className="container mx-auto">
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Add New Property</CardTitle>
-          <CardDescription>Create a new property listing</CardDescription>
+    <div className="container mx-auto px-4 py-6">
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl md:text-3xl font-bold">Add New Property</CardTitle>
+          <CardDescription className="text-sm md:text-base">Create a new property listing</CardDescription>
         </CardHeader>
         <CardContent>
           <form
             onSubmit={handleSubmit}
-            className="space-y-6">
+            className="space-y-4 md:space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="propertyName">Property Name</Label>
+              <Label
+                htmlFor="propertyName"
+                className="text-sm md:text-base">
+                Property Name
+              </Label>
               <Input
                 id="propertyName"
                 placeholder="Enter property name"
                 value={propertyName}
                 onChange={(e) => setPropertyName(e.target.value)}
                 required
+                className="w-full"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
+              <Label
+                htmlFor="dueDate"
+                className="text-sm md:text-base">
+                Due Date
+              </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
-                    className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
+                    className={cn("w-full justify-start text-left font-normal text-sm md:text-base", !date && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {date ? format(date, "PPP") : <span>Pick a date</span>}
                   </Button>
@@ -147,19 +156,24 @@ export default function AddPropertyPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="propertyImage">Property Image</Label>
+              <Label
+                htmlFor="propertyImage"
+                className="text-sm md:text-base">
+                Property Image
+              </Label>
               <Input
                 id="propertyImage"
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
                 required
+                className="w-full"
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full mt-4"
               disabled={loading}>
               {loading ? "Creating..." : "Create Property"}
             </Button>
