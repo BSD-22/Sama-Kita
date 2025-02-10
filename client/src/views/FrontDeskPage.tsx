@@ -10,6 +10,7 @@ import axios from "axios";
 import { baseUrl } from "@/constants/baseUrl";
 import { useToast } from "@/hooks/use-toast";
 import { fetchRenters } from "@/store/renters";
+import { format } from "date-fns";
 
 type Room = {
   id: number;
@@ -65,6 +66,26 @@ export default function FrontDeskPage() {
   const [returnKey, setReturnKey] = useState(false);
   const [cancelUnpaidBills, setCancelUnpaidBills] = useState(false);
   const [endContractNotes, setEndContractNotes] = useState("");
+
+  const [pendingPayments, setPendingPayments] = useState<Array<{
+    id: number;
+    orderId: string;
+    amount: number;
+    month: number;
+    year: number;
+    dueDate: string;
+    isOverdue: boolean;
+  }>>([]);
+
+  const [selectedPayment, setSelectedPayment] = useState<{
+    id: number;
+    orderId: string;
+    amount: number;
+    month: number;
+    year: number;
+    dueDate: string;
+    isOverdue: boolean;
+  } | null>(null);
 
   const handlePropertyChange = (propertyId: string) => {
     const property = properties.find((p) => p.id === parseInt(propertyId));
@@ -154,13 +175,28 @@ export default function FrontDeskPage() {
     }
   };
 
+  const fetchPendingPayments = async (renterId: number) => {
+    try {
+      const { data } = await axios.get(`${baseUrl}/renters/${renterId}/pending-payments`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.access_token}`,
+        },
+      });
+      setPendingPayments(data);
+    } catch (error) {
+      console.error("Error fetching pending payments:", error);
+    }
+  };
+
   const handleCompletePayment = async () => {
     try {
-      if (!selectedRenter) return;
+      if (!selectedRenter || !selectedPayment) return;
 
       await axios.put(
-        `${baseUrl}/renters/${selectedRenter.id}/complete-payment`,
-        {},
+        `${baseUrl}/renters/${selectedRenter.id}/complete-manual-payment`,
+        {
+          transactionId: selectedPayment.id
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.access_token}`,
@@ -174,11 +210,11 @@ export default function FrontDeskPage() {
       });
 
       setIsPaymentOpen(false);
+      setPendingPayments([]);
       dispatch(fetchRenters());
       dispatch(fetchProperties());
     } catch (error) {
       console.log(error, "frontdesk page");
-
       toast({
         title: "Error",
         description: "Failed to complete payment",
@@ -365,9 +401,10 @@ export default function FrontDeskPage() {
               <div className="space-y-4">
                 <Label>Select Renter</Label>
                 <Select
-                  onValueChange={(value) => {
-                    setSelectedRenter(JSON.parse(value));
-                    setEndContractStep(3);
+                  onValueChange={async (value) => {
+                    const renter = JSON.parse(value);
+                    setSelectedRenter(renter);
+                    await fetchPendingPayments(renter.id);
                   }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a renter" />
@@ -460,6 +497,8 @@ export default function FrontDeskPage() {
             if (!open) {
               setSelectedProperty(null);
               setSelectedRenter(null);
+              setSelectedPayment(null);
+              setPendingPayments([]);
             }
           }}>
           <DialogTrigger asChild>
@@ -513,7 +552,11 @@ export default function FrontDeskPage() {
                           <p className="text-sm text-gray-400">Add a renter first or select another property.</p>
                         </div>
                       ) : (
-                        <Select onValueChange={(value) => setSelectedRenter(JSON.parse(value))}>
+                        <Select onValueChange={async (value) => {
+                          const renter = JSON.parse(value);
+                          setSelectedRenter(renter);
+                          await fetchPendingPayments(renter.id);
+                        }}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a renter" />
                           </SelectTrigger>
@@ -532,9 +575,38 @@ export default function FrontDeskPage() {
                       )}
                     </div>
                   )}
+
+                  {selectedRenter && pendingPayments.length === 0 && (
+                    <div className="text-center py-4">
+                      <p className="text-gray-500">No pending payments for this renter.</p>
+                    </div>
+                  )}
+
+                  {selectedRenter && pendingPayments.length > 0 && (
+                    <div>
+                      <Label>Select Payment to Complete</Label>
+                      <Select onValueChange={(value) => setSelectedPayment(JSON.parse(value))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select payment to complete" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {pendingPayments.map((payment) => (
+                            <SelectItem
+                              key={payment.id}
+                              value={JSON.stringify(payment)}
+                            >
+                              {`${format(new Date(payment.year, payment.month - 1), "MMMM yyyy")} - Rp ${payment.amount.toLocaleString()}`}
+                              {payment.isOverdue && " (Overdue)"}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
                   <Button
                     onClick={handleCompletePayment}
-                    disabled={!selectedRenter}
+                    disabled={!selectedRenter || !selectedPayment}
                     type="button">
                     Complete Payment
                   </Button>

@@ -1,12 +1,13 @@
 import { Router } from 'express';
+
+import llmController from '../controllers/llmController';
 import { authentication } from '../middlewares/authentication';
 import errorHandler from '../middlewares/errorHandler';
-import llmController from '../controllers/llmController';
 import authRoutes from './auth';
+import llmRoutes from './llm';
+import paymentRoutes from './payment';
 import propertyRoutes from './property';
 import renterRoutes from './renter';
-import paymentRoutes from './payment';
-import llmRoutes from './llm';
 import roomRoutes from './room';
 
 const router = Router();

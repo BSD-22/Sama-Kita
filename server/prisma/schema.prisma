@@ -36,7 +36,7 @@ model OTP {
 model Property {
   id                Int             @id @default(autoincrement())
   propertyName      String
-  dueDate           String
+  dueDate           Int
   userId            Int             
   propertyImage     String
   user              User            @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -112,13 +112,18 @@ model Renter {
 }
 
 model RenterTransaction {
-  id                Int                 @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
   renterId          Int
-  renter            Renter              @relation(fields: [renterId], references: [id])
-  orderId           String              @unique
-  paymentStatus     Boolean             @default(false)
+  renter            Renter    @relation(fields: [renterId], references: [id])
+  orderId           String    @unique
+  paymentStatus     Boolean   @default(false)
   amount            Int
-  createdAt      DateTime @default(now())
+  createdAt         DateTime  @default(now())
+  dueDate           DateTime  // Add this field
+  paidAt            DateTime? // Add this field to track when payment was made
+  isOverdue         Boolean   @default(false)
+  month             Int       // Add this to track which month this payment is for
+  year              Int       // Add this to track which year this payment is for
 }
 
 

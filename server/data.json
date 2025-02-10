@@ -15,13 +15,13 @@
     {
       "propertyName": "Ben Gedung A",
       "userId": 2,
-      "dueDate": "3",
+      "dueDate": 3,
       "propertyImage": "https://example.com/property1.jpg"
     },
     {
       "propertyName": "Awani Gedung B",
       "userId": 2,
-      "dueDate": "3",
+      "dueDate": 3,
       "propertyImage": "https://example.com/property2.jpg"
     }
   ],
@@ -51,6 +51,23 @@
       "totalRooms": 4
     }
   ],
+  "individualrooms": [
+    {
+      "roomNumber": "101",
+      "status": "Occupied",
+      "roomId": 1
+    },
+    {
+      "roomNumber": "102",
+      "status": "Occupied",
+      "roomId": 1
+    },
+    {
+      "roomNumber": "201",
+      "status": "Occupied",
+      "roomId": 2
+    }
+  ],
   "renters": [
     {
       "userId": 2,
@@ -59,6 +76,7 @@
       "renterPhone": "081234567890",
       "ktpNumber": "1234567890123456",
       "depositAmount": 2300000,
+      "roomId": 1,
       "individualRoomId": 1,
       "propertyId": 1,
       "joinDate": "2024-01-01T00:00:00.000Z",
@@ -72,6 +90,7 @@
       "renterPhone": "081234567891",
       "ktpNumber": "1234567890123457",
       "depositAmount": 2300000,
+      "roomId": 1,
       "individualRoomId": 2,
       "propertyId": 1,
       "joinDate": "2024-01-15T00:00:00.000Z",
@@ -86,7 +105,7 @@
       "ktpNumber": "1234567890123458",
       "depositAmount": 2500000,
       "roomId": 2,
-      "individualRoomId": 6,
+      "individualRoomId": 3,
       "propertyId": 1,
       "joinDate": "2023-12-01T00:00:00.000Z",
       "leaveDate": "2024-12-01T00:00:00.000Z",
@@ -119,21 +138,36 @@
       "orderId": "TRX-001",
       "paymentStatus": true,
       "amount": 2300000,
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "dueDate": "2024-01-03T00:00:00.000Z",
+      "paidAt": "2024-01-02T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 1,
+      "year": 2024
     },
     {
       "renterId": 2,
       "orderId": "TRX-002",
       "paymentStatus": false,
       "amount": 2300000,
-      "createdAt": "2024-01-15T00:00:00.000Z"
+      "createdAt": "2024-01-15T00:00:00.000Z",
+      "dueDate": "2024-01-18T00:00:00.000Z",
+      "paidAt": null,
+      "isOverdue": true,
+      "month": 1,
+      "year": 2024
     },
     {
       "renterId": 3,
       "orderId": "TRX-003",
       "paymentStatus": true,
       "amount": 2500000,
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "dueDate": "2024-01-03T00:00:00.000Z",
+      "paidAt": "2024-01-01T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 1,
+      "year": 2024
     }
   ]
 }
