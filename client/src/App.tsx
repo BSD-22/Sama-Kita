@@ -19,6 +19,7 @@ import RentersPage from "./views/RentersPage";
 import AddRenterPage from "./views/AddRenterPage";
 import PropertiesPage from "./views/PropertiesPage";
 import AddGeneralRoomPage from "./views/AddGeneralRoomPage";
+import RenterDetailPage from "./views/RenterDetailPage";
 
 export default function App() {
   return (
@@ -109,6 +110,10 @@ export default function App() {
           <Route
             path="/renters/add"
             element={<AddRenterPage />}
+          />
+          <Route
+            path="/renters/:id"
+            element={<RenterDetailPage />}
           />
         </Route>
       </Routes>

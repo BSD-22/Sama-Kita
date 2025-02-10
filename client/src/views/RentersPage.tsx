@@ -122,7 +122,7 @@ export default function RentersPage() {
                   <p className="text-sm text-gray-500">Property: {renter.property?.propertyName}</p>
                 </div>
 
-                <Link to={`/property/${renter.propertyId}/renters/${renter.id}`}>
+                <Link to={`/renters/${renter.id}`}>
                   <Button
                     variant="outline"
                     className="w-full">

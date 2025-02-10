@@ -1,7 +1,10 @@
-import { NextFunction, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import midtransClient from 'midtrans-client';
 import axios from 'axios';
+import midtransClient from 'midtrans-client';
+
+import { NextFunction, Request, Response } from 'express';
+
+import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 export default class midtransController {
@@ -20,6 +23,7 @@ export default class midtransController {
         },
         include: {
           room: true,
+          property: true,
         },
       });
       if (!renter) throw { name: 'NotFoundError' };
@@ -53,6 +57,9 @@ export default class midtransController {
           renterId: renter.id,
           orderId: orderId,
           amount: renter.room.price,
+          dueDate: new Date(new Date().setDate(renter.property.dueDate)),
+          month: new Date().getMonth() + 1,
+          year: new Date().getFullYear(),
         },
       });
 

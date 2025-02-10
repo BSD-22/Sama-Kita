@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
+
 import { PrismaClient } from '@prisma/client';
+
 import { imagekit } from '../helpers/imagekit';
+import { checkAndUpdatePaymentStatus } from '../utils/paymentUtils';
 
 const prisma = new PrismaClient();
 
@@ -38,23 +41,41 @@ export default class renterController {
     }
   }
 
-  static async getRenterById(req: Request<{ id: string }, unknown, unknown>, res: Response, next: NextFunction) {
+  static async getRenterById(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
+      const userId = req.loginInfo?.userId;
+
+      if (!userId) throw { name: 'AuthenticationError' };
 
       const renter = await prisma.renter.findUnique({
-        where: {
-          id: +id,
-        },
+        where: { id: +id },
         include: {
-          RenterExpenses: true,
+          property: true,
           room: true,
-          RenterTransaction: true,
+          individualRoom: true,
+          RenterTransaction: {
+            orderBy: [{ year: 'desc' }, { month: 'desc' }],
+          },
         },
       });
-      if (!renter) throw { name: 'NotFoundError' };
 
-      res.status(200).json(renter);
+      if (!renter) throw { name: 'NotFoundError' };
+      if (renter.userId !== userId) throw { name: 'AuthorizationError' };
+
+      // Check and update payment status
+      await checkAndUpdatePaymentStatus(+id);
+
+      // Fetch updated transactions
+      const transactions = await prisma.renterTransaction.findMany({
+        where: { renterId: +id },
+        orderBy: [{ year: 'desc' }, { month: 'desc' }],
+      });
+
+      res.status(200).json({
+        ...renter,
+        RenterTransaction: transactions,
+      });
     } catch (err) {
       console.log(err);
       next(err);
@@ -234,6 +255,7 @@ export default class renterController {
   static async completeManualPayment(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
+      const { transactionId } = req.body;
       const userId = req.loginInfo?.userId;
 
       if (!userId) throw { name: 'AuthenticationError' };
@@ -243,41 +265,118 @@ export default class renterController {
         where: { id: +id },
         include: {
           room: true,
-          RenterTransaction: {
-            where: {
-              paymentStatus: false,
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-            take: 1,
-          },
+          property: true,
         },
       });
 
       if (!renter) throw { name: 'NotFoundError', message: 'Renter not found' };
       if (renter.hasLeaved) throw { name: 'ValidationError', message: 'Renter has already left' };
 
-      // If there's a pending transaction, mark it as paid
-      if (renter.RenterTransaction.length > 0) {
-        const transaction = renter.RenterTransaction[0];
-        await prisma.renterTransaction.update({
-          where: { id: transaction.id },
-          data: { paymentStatus: true },
-        });
-      }
-
-      // Create a new transaction record for the manual payment
-      const result = await prisma.renterTransaction.create({
+      // Update the transaction status
+      const result = await prisma.renterTransaction.update({
+        where: { id: transactionId },
         data: {
-          renterId: +id,
-          orderId: `MANUAL-${Date.now()}`,
           paymentStatus: true,
-          amount: renter.room.price,
+          paidAt: new Date(),
+          isOverdue: false,
         },
       });
 
       res.status(200).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async updateRenter(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const userId = req.loginInfo?.userId;
+      const updateData = req.body;
+
+      if (!userId) throw { name: 'AuthenticationError' };
+
+      // Find the renter first to verify ownership
+      const existingRenter = await prisma.renter.findUnique({
+        where: { id: +id },
+      });
+
+      if (!existingRenter) throw { name: 'NotFoundError' };
+      if (existingRenter.userId !== userId) throw { name: 'AuthorizationError' };
+
+      // Update the renter
+      const updatedRenter = await prisma.renter.update({
+        where: { id: +id },
+        data: {
+          renterName: updateData.renterName,
+          renterEmail: updateData.renterEmail,
+          renterPhone: updateData.renterPhone,
+          ktpNumber: updateData.ktpNumber,
+          depositAmount: updateData.depositAmount,
+        },
+        include: {
+          property: true,
+          room: true,
+          individualRoom: true,
+        },
+      });
+
+      res.status(200).json(updatedRenter);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async completePayment(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { transactionId } = req.body;
+
+      const transaction = await prisma.renterTransaction.update({
+        where: { id: +transactionId },
+        data: {
+          paymentStatus: true,
+          paidAt: new Date(),
+          isOverdue: false,
+        },
+      });
+
+      res.status(200).json(transaction);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async getPendingPayments(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const userId = req.loginInfo?.userId;
+
+      if (!userId) throw { name: 'AuthenticationError' };
+
+      // Get renter's pending transactions
+      const pendingPayments = await prisma.renterTransaction.findMany({
+        where: {
+          renterId: +id,
+          paymentStatus: false,
+        },
+        orderBy: [{ year: 'desc' }, { month: 'desc' }],
+        include: {
+          renter: {
+            select: {
+              renterName: true,
+              room: {
+                select: {
+                  typeName: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      res.status(200).json(pendingPayments);
     } catch (err) {
       next(err);
     }
