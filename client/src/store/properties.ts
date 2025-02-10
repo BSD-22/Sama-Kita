@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AppDispatch, RootState } from "./store.ts";
+import type { AppDispatch } from "./store.ts";
 import axios from "axios";
 
 // Define a type for the slice state
@@ -30,7 +30,7 @@ export const { setProperties } = propertiesSlice.actions;
 export default propertiesSlice.reducer;
 
 export const fetchProperties = () => {
-  return async (dispatch: AppDispatch, getState: () => RootState) => {
+  return async (dispatch: AppDispatch) => {
     try {
       const { data } = await axios.get(`http://localhost:8080/properties`, { headers: { Authorization: `Bearer ${localStorage.access_token}` } });
 

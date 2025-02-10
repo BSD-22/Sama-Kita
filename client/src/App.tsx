@@ -13,6 +13,7 @@ import EditRoomPage from "./views/EditRoomPage";
 import LandingPage from "./views/LandingPage";
 import AddPropertyPage from "./views/AddPropertyPage";
 import PropertyListPage from "./views/PropertyListPage";
+import FrontDeskPage from "./views/FrontDeskPage";
 
 export default function App() {
   return (
@@ -78,6 +79,12 @@ export default function App() {
           <Route
             path="/expenses/add"
             element={<AddRenterExpenses />}
+          />
+
+          {/* Front Desk Routes */}
+          <Route
+            path="/frontdesk"
+            element={<FrontDeskPage />}
           />
         </Route>
       </Routes>

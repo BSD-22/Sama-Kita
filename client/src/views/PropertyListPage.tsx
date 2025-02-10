@@ -66,6 +66,7 @@ export default function PropertyListPage() {
           {properties.map((property) => (
             <Card
               key={property.id}
+              onClick={() => navigate(`/property/${property.id}`)}
               className="cursor-pointer hover:shadow-lg transition-shadow">
               <CardHeader className="relative p-0">
                 <img
