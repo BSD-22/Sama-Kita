@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AppDispatch, RootState } from "./store.ts";
+import type { AppDispatch } from "./store.ts";
 import axios from "axios";
 
 // Define a type for the slice state
@@ -30,7 +30,7 @@ export const { setRenters } = renterSlice.actions;
 export default renterSlice.reducer;
 
 export const fetchRenters = () => {
-  return async (dispatch: AppDispatch, getState: () => RootState) => {
+  return async (dispatch: AppDispatch) => {
     try {
       const { data } = await axios.get(`http://localhost:8080/renters`, { headers: { Authorization: `Bearer ${localStorage.access_token}` } });
 

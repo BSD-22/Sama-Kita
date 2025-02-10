@@ -26,6 +26,7 @@ export function Sidebar({ className }: SidebarProps) {
       items: [
         { name: "Overview", path: "/" },
         { name: "Graph Performance", path: "/graph" },
+        { name: "Front Desk", path: "/frontdesk" },
       ],
     },
     {

@@ -11,208 +11,129 @@
       "name": "Tes"
     }
   ],
-  "rooms": [
-    {
-      "typeName": "Standard",
-      "price": 2300000,
-      "roomImage": "https://img.freepik.com/premium-photo/blue-house-with-sign-that-says-number-7_1230717-143756.jpg?w=1480",
-      "Area": 9,
-      "propertyId": 1,
-      "totalRooms": 15
-    },
-    {
-      "typeName": "Deluxe",
-      "price": 2500000,
-      "roomImage": "https://img.freepik.com/premium-photo/blue-house-with-sign-that-says-number-7_1230717-143756.jpg?w=1480",
-      "Area": 12,
-      "propertyId": 2,
-      "totalRooms": 10
-    },
-    {
-      "typeName": "Premium",
-      "price": 3000000,
-      "roomImage": "https://img.freepik.com/premium-photo/blue-house-with-sign-that-says-number-7_1230717-143756.jpg?w=1480",
-      "Area": 20,
-      "propertyId": 1,
-      "totalRooms": 5
-    }
-  ],
   "properties": [
     {
       "propertyName": "Ben Gedung A",
       "userId": 2,
       "dueDate": "3",
-      "propertyImage": "https://img.freepik.com/premium-photo/blue-house-with-sign-that-says-number-7_1230717-143756.jpg?w=1480"
+      "propertyImage": "https://example.com/property1.jpg"
     },
     {
       "propertyName": "Awani Gedung B",
       "userId": 2,
       "dueDate": "3",
-      "propertyImage": "https://img.freepik.com/premium-photo/blue-house-with-sign-that-says-number-7_1230717-143756.jpg?w=1480"
+      "propertyImage": "https://example.com/property2.jpg"
+    }
+  ],
+  "rooms": [
+    {
+      "typeName": "Standard",
+      "price": 2300000,
+      "roomImage": "https://example.com/standard-room.jpg",
+      "Area": 9,
+      "propertyId": 1,
+      "totalRooms": 5
+    },
+    {
+      "typeName": "Deluxe",
+      "price": 2500000,
+      "roomImage": "https://example.com/deluxe-room.jpg",
+      "Area": 12,
+      "propertyId": 1,
+      "totalRooms": 3
+    },
+    {
+      "typeName": "Premium",
+      "price": 3000000,
+      "roomImage": "https://example.com/premium-room.jpg",
+      "Area": 20,
+      "propertyId": 2,
+      "totalRooms": 4
     }
   ],
   "renters": [
     {
       "userId": 2,
       "renterName": "Alice Renter",
-      "renterEmail": "alice.renter@example.com",
+      "renterEmail": "alice@example.com",
       "renterPhone": "081234567890",
       "ktpNumber": "1234567890123456",
-      "depositAmount": 1500000,
-      "roomId": 1,
+      "depositAmount": 2300000,
+      "individualRoomId": 1,
       "propertyId": 1,
-      "joinDate": "2024-10-01T00:00:00.000Z",
-      "leaveDate": "2024-12-01T00:00:00.000Z",
+      "joinDate": "2024-01-01T00:00:00.000Z",
+      "leaveDate": "2025-01-01T00:00:00.000Z",
       "hasLeaved": false
     },
     {
       "userId": 2,
       "renterName": "Bob Renter",
-      "renterEmail": "bob.renter@example.com",
-      "renterPhone": "0812987654321",
-      "ktpNumber": "9876543210987654",
-      "depositAmount": 2000000,
-      "roomId": 2,
-      "propertyId": 2,
-      "joinDate": "2024-02-01T00:00:00.000Z",
-      "leaveDate": "2024-04-01T00:00:00.000Z",
-      "hasLeaved": true
+      "renterEmail": "bob@example.com",
+      "renterPhone": "081234567891",
+      "ktpNumber": "1234567890123457",
+      "depositAmount": 2300000,
+      "individualRoomId": 2,
+      "propertyId": 1,
+      "joinDate": "2024-01-15T00:00:00.000Z",
+      "leaveDate": "2025-01-15T00:00:00.000Z",
+      "hasLeaved": false
     },
     {
       "userId": 2,
-      "renterName": "Chris Tenant",
-      "renterEmail": "chris.tenant@example.com",
-      "renterPhone": "082112223334",
-      "ktpNumber": "1122334455667788",
-      "depositAmount": 3000000,
-      "roomId": 1,
+      "renterName": "Charlie Renter",
+      "renterEmail": "charlie@example.com",
+      "renterPhone": "081234567892",
+      "ktpNumber": "1234567890123458",
+      "depositAmount": 2500000,
+      "roomId": 2,
+      "individualRoomId": 6,
       "propertyId": 1,
       "joinDate": "2023-12-01T00:00:00.000Z",
-      "leaveDate": "2024-05-01T00:00:00.000Z",
-      "hasLeaved": false
-    },
-    {
-      "userId": 2,
-      "renterName": "Diana Guest",
-      "renterEmail": "diana.guest@example.com",
-      "renterPhone": "083334455667",
-      "ktpNumber": "7766554433221100",
-      "depositAmount": 1800000,
-      "roomId": 2,
-      "propertyId": 2,
-      "joinDate": "2024-01-15T00:00:00.000Z",
-      "leaveDate": "2024-12-15T00:00:00.000Z",
-      "hasLeaved": false
-    },
-    {
-      "userId": 2,
-      "renterName": "Emily Doe",
-      "renterEmail": "emily.doe@example.com",
-      "renterPhone": "081355667788",
-      "ktpNumber": "9988776655443322",
-      "depositAmount": 2100000,
-      "roomId": 2,
-      "propertyId": 1,
-      "joinDate": "2024-09-01T00:00:00.000Z",
-      "leaveDate": "2024-12-31T00:00:00.000Z",
+      "leaveDate": "2024-12-01T00:00:00.000Z",
       "hasLeaved": false
     }
   ],
   "renterexpenses": [
     {
       "renterId": 1,
-      "serviceDate": "2024-11-01T00:00:00.000Z",
-      "serviceDescription": "Monthly electricity bill",
-      "maintenanceType": "Hardware",
-      "servicePrice": 500000,
-      "serviceInvoice": "invoice_001",
-      "lastPaymentDate": "2024-11-30T00:00:00.000Z"
-    },
-    {
-      "renterId": 4,
-      "serviceDate": "2024-12-10T00:00:00.000Z",
-      "serviceDescription": "Cleaning service",
-      "maintenanceType": "Health",
-      "servicePrice": 150000,
-      "serviceInvoice": "invoice_012",
-      "lastPaymentDate": "2025-01-05T00:00:00.000Z"
-    },
-    {
-      "renterId": 5,
-      "serviceDate": "2024-10-25T00:00:00.000Z",
-      "serviceDescription": "Cable TV subscription",
-      "maintenanceType": "Entertainment",
-      "servicePrice": 120000,
-      "serviceInvoice": "invoice_013",
-      "lastPaymentDate": "2024-11-01T00:00:00.000Z"
-    },
-    {
-      "renterId": 3,
-      "serviceDate": "2024-07-15T00:00:00.000Z",
-      "serviceDescription": "Room painting",
-      "maintenanceType": "Renovation",
-      "servicePrice": 750000,
-      "serviceInvoice": "invoice_014",
-      "lastPaymentDate": "2024-08-01T00:00:00.000Z"
-    },
-    {
-      "renterId": 1,
-      "serviceDate": "2024-03-10T00:00:00.000Z",
-      "serviceDescription": "Water usage fee",
       "maintenanceType": "Utilities",
-      "servicePrice": 250000,
-      "serviceInvoice": "invoice_015",
-      "lastPaymentDate": "2024-03-20T00:00:00.000Z"
+      "serviceDate": "2024-01-15T00:00:00.000Z",
+      "serviceDescription": "Monthly electricity bill",
+      "servicePrice": 500000,
+      "serviceInvoice": "https://example.com/invoice1.pdf",
+      "lastPaymentDate": "2024-01-20T00:00:00.000Z"
     },
     {
       "renterId": 2,
-      "serviceDate": "2024-06-18T00:00:00.000Z",
-      "serviceDescription": "Pest control",
-      "maintenanceType": "Health",
+      "maintenanceType": "Repair",
+      "serviceDate": "2024-01-16T00:00:00.000Z",
+      "serviceDescription": "AC maintenance",
       "servicePrice": 300000,
-      "serviceInvoice": "invoice_016",
-      "lastPaymentDate": "2024-07-01T00:00:00.000Z"
-    },
-    {
-      "renterId": 5,
-      "serviceDate": "2024-09-20T00:00:00.000Z",
-      "serviceDescription": "Internet fee",
-      "maintenanceType": "Utilities",
-      "servicePrice": 450000,
-      "serviceInvoice": "invoice_017",
-      "lastPaymentDate": "2024-09-30T00:00:00.000Z"
+      "serviceInvoice": "https://example.com/invoice2.pdf",
+      "lastPaymentDate": "2024-01-25T00:00:00.000Z"
     }
   ],
   "rentertransactions": [
     {
-      "renterId": 2,
-      "orderId": "order_001",
+      "renterId": 1,
+      "orderId": "TRX-001",
       "paymentStatus": true,
-      "amount": 2500000
+      "amount": 2300000,
+      "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
       "renterId": 2,
-      "orderId": "order_002",
+      "orderId": "TRX-002",
       "paymentStatus": false,
-      "amount": 2300000
+      "amount": 2300000,
+      "createdAt": "2024-01-15T00:00:00.000Z"
     },
     {
       "renterId": 3,
-      "orderId": "order_003",
+      "orderId": "TRX-003",
       "paymentStatus": true,
-      "amount": 3000000
-    },
-    {
-      "renterId": 1,
-      "orderId": "order_004",
-      "paymentStatus": true,
-      "amount": 2300000
-    },
-    {
-      "renterId": 1,
-      "orderId": "order_005",
-      "paymentStatus": true,
-      "amount": 2300000
+      "amount": 2500000,
+      "createdAt": "2024-01-01T00:00:00.000Z"
     }
   ]
 }

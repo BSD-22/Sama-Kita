@@ -61,13 +61,35 @@ export default class propertyController {
           id: +id,
         },
         include: {
-          Room: true,
-          Renter: true,
+          Room: {
+            include: {
+              individualRooms: {
+                include: {
+                  renters: {
+                    where: {
+                      hasLeaved: false,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       });
+
       if (!property) throw { name: 'NotFoundError' };
 
-      res.status(200).json(property);
+      // Transform the data to include room availability info
+      const transformedProperty = {
+        ...property,
+        Room: property.Room.map((room) => ({
+          ...room,
+          availableRooms: room.individualRooms.filter((ir) => ir.status === 'Available').length,
+          occupiedRooms: room.individualRooms.filter((ir) => ir.status === 'Rented').length,
+        })),
+      };
+
+      res.status(200).json(transformedProperty);
     } catch (err) {
       console.log(err);
       next(err);
@@ -130,7 +152,7 @@ export default class propertyController {
           propertyId: +propertyId,
         },
         include: {
-          Renter: {
+          renters: {
             include: {
               RenterExpenses: true,
             },
@@ -146,7 +168,7 @@ export default class propertyController {
     }
   }
 
-  static async getRentersByProperty(req: Request<{ propertyId: string }, unknown, unknown>, res: Response, next: NextFunction) {
+  static async getRentersByUser(req: Request<unknown, unknown, unknown>, res: Response, next: NextFunction) {
     try {
       const renters = await prisma.renter.findMany({
         where: {
@@ -199,7 +221,7 @@ export default class propertyController {
           id: +roomId,
         },
         include: {
-          Renter: {
+          renters: {
             include: {
               RenterExpenses: true,
             },
@@ -272,9 +294,35 @@ export default class propertyController {
           throw { name: 'UploadError', message: 'Failed to upload file', details: err };
         });
 
-      const room = await prisma.room.create({ data: { typeName, price: +price, Area: +Area, propertyId: +propertyId, totalRooms: +totalRooms, roomImage: roomImage.url } });
+      const result = await prisma.$transaction(async (tx) => {
+        // Create the room type
+        const room = await tx.room.create({
+          data: {
+            typeName,
+            price: +price,
+            Area: +Area,
+            propertyId: +propertyId,
+            totalRooms: +totalRooms,
+            roomImage: roomImage.url,
+          },
+        });
 
-      res.status(200).json(room);
+        // Create individual rooms
+        const individualRooms = await Promise.all(
+          Array.from({ length: totalRooms }, (_, i) => {
+            return tx.individualRoom.create({
+              data: {
+                roomNumber: `${typeName}-${i + 1}`,
+                roomId: room.id,
+              },
+            });
+          }),
+        );
+
+        return { ...room, individualRooms };
+      });
+
+      res.status(200).json(result);
     } catch (err) {
       console.log(err);
       next(err);
@@ -288,18 +336,22 @@ export default class propertyController {
           userId: req.loginInfo?.userId,
         },
         include: {
-          Room: true,
-          Renter: true,
+          Room: {
+            include: {
+              individualRooms: true,
+            },
+          },
         },
       });
       if (!properties) throw { name: 'NotFoundError' };
 
       const occupancies = properties.map((property) => {
         let totalRooms = 0;
-        const occupiedRooms = property.Renter.length;
+        let occupiedRooms = 0;
 
         property.Room.forEach((room) => {
-          totalRooms += room.totalRooms; // Total rooms in this property
+          totalRooms += room.individualRooms.length;
+          occupiedRooms += room.individualRooms.filter((ir) => ir.status === 'Rented').length;
         });
 
         return {
@@ -319,15 +371,34 @@ export default class propertyController {
 
   static async deleteRenterById(req: Request<{ id: string }, unknown, unknown>, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params; // renterId
+      const { id } = req.params;
 
-      const renter = await prisma.renter.delete({
-        where: {
-          id: +id,
+      // Get renter details first to know which individual room to update
+      const renter = await prisma.renter.findUnique({
+        where: { id: +id },
+        include: {
+          individualRoom: true,
         },
       });
 
-      res.status(200).json(renter);
+      if (!renter) throw { name: 'NotFoundError' };
+
+      const result = await prisma.$transaction(async (tx) => {
+        // Update individual room status back to Available
+        await tx.individualRoom.update({
+          where: { id: renter.individualRoomId },
+          data: { status: 'Available' },
+        });
+
+        // Delete the renter
+        const deletedRenter = await tx.renter.delete({
+          where: { id: +id },
+        });
+
+        return deletedRenter;
+      });
+
+      res.status(200).json(result);
     } catch (err) {
       console.log(err);
       next(err);
@@ -342,7 +413,17 @@ export default class propertyController {
           userId: +userId!,
         },
         include: {
-          Room: true,
+          Room: {
+            include: {
+              individualRooms: true,
+              renters: {
+                include: {
+                  RenterExpenses: true,
+                  RenterTransaction: true,
+                },
+              },
+            },
+          },
           Operator: true,
           Renter: {
             include: {
@@ -407,6 +488,155 @@ export default class propertyController {
     } catch (error) {
       console.error('Error in addProperty:', error);
       next(error);
+    }
+  }
+
+  static async addNewRenter(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { renterName, renterEmail, renterPhone, depositAmount, roomId } = req.body;
+      const userId = req.loginInfo?.userId;
+
+      if (!userId) throw { name: 'AuthenticationError' };
+
+      // Get room details first
+      const roomDetails = await prisma.room.findUnique({
+        where: { id: +roomId },
+      });
+
+      if (!roomDetails) throw { name: 'NotFoundError', message: 'Room not found' };
+
+      // Find an available individual room
+      const availableRoom = await prisma.individualRoom.findFirst({
+        where: {
+          roomId: +roomId,
+          status: 'Available',
+        },
+      });
+
+      if (!availableRoom) throw { name: 'ValidationError', message: 'No available rooms of this type' };
+
+      const result = await prisma.$transaction(async (tx) => {
+        const renter = await tx.renter.create({
+          data: {
+            renterName,
+            renterEmail,
+            renterPhone,
+            depositAmount: +depositAmount,
+            userId: +userId,
+            roomId: +roomId,
+            individualRoomId: availableRoom.id,
+            propertyId: roomDetails.propertyId, // Use roomDetails instead of room
+            joinDate: new Date(),
+            leaveDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+            ktpNumber: '',
+          },
+        });
+
+        await tx.individualRoom.update({
+          where: { id: availableRoom.id },
+          data: { status: 'Rented' },
+        });
+
+        return renter;
+      });
+
+      res.status(201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async endRenterContract(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const userId = req.loginInfo?.userId;
+
+      if (!userId) throw { name: 'AuthenticationError' };
+
+      // Get renter details
+      const renter = await prisma.renter.findUnique({
+        where: { id: +id },
+        include: { room: true },
+      });
+
+      if (!renter) throw { name: 'NotFoundError', message: 'Renter not found' };
+      if (renter.hasLeaved) throw { name: 'ValidationError', message: 'Renter has already left' };
+
+      // Start a transaction
+      const result = await prisma.$transaction(async (tx) => {
+        // Update renter status
+        const updatedRenter = await tx.renter.update({
+          where: { id: +id },
+          data: {
+            hasLeaved: true,
+            leaveDate: new Date(), // Set leave date to today
+          },
+        });
+
+        // Update room status
+        await tx.room.update({
+          where: { id: renter.roomId },
+          data: { status: 'Available' },
+        });
+
+        return updatedRenter;
+      });
+
+      res.status(200).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async completeManualPayment(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const userId = req.loginInfo?.userId;
+
+      if (!userId) throw { name: 'AuthenticationError' };
+
+      // Get renter details
+      const renter = await prisma.renter.findUnique({
+        where: { id: +id },
+        include: {
+          room: true,
+          RenterTransaction: {
+            where: {
+              paymentStatus: false,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 1,
+          },
+        },
+      });
+
+      if (!renter) throw { name: 'NotFoundError', message: 'Renter not found' };
+      if (renter.hasLeaved) throw { name: 'ValidationError', message: 'Renter has already left' };
+
+      // If there's a pending transaction, mark it as paid
+      if (renter.RenterTransaction.length > 0) {
+        const transaction = renter.RenterTransaction[0];
+        await prisma.renterTransaction.update({
+          where: { id: transaction.id },
+          data: { paymentStatus: true },
+        });
+      }
+
+      // Create a new transaction record for the manual payment
+      const result = await prisma.renterTransaction.create({
+        data: {
+          renterId: +id,
+          orderId: `MANUAL-${Date.now()}`,
+          paymentStatus: true,
+          amount: renter.room.price,
+        },
+      });
+
+      res.status(200).json(result);
+    } catch (err) {
+      next(err);
     }
   }
 }

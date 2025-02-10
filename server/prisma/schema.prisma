@@ -60,10 +60,21 @@ model Room {
   price             Int
   roomImage         String?
   Area              Int
-  Renter            Renter[]
   propertyId        Int
   property          Property        @relation(fields: [propertyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   totalRooms        Int
+  status            String          @default("Available")
+  individualRooms   IndividualRoom[]
+  renters          Renter[]
+}
+
+model IndividualRoom {
+  id                Int             @id @default(autoincrement())
+  roomNumber        String          
+  status            String          @default("Available")
+  room              Room            @relation(fields: [roomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  roomId            Int
+  renters           Renter[]
 }
 
 model RenterExpenses {
@@ -85,12 +96,14 @@ model Renter {
   renterName        String
   renterEmail       String
   renterPhone       String
-  ktpNumber         String                // ditampilin hanya untuk pemilik bukan ke operator
+  ktpNumber         String                
   joinDate          DateTime
   leaveDate         DateTime
   hasLeaved         Boolean               @default(false)
   room              Room                  @relation(fields: [roomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  roomId            Int
+  roomId            Int                   // Keep track of room type
+  individualRoom    IndividualRoom        @relation(fields: [individualRoomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  individualRoomId  Int                   // Specific room assignment
   property          Property              @relation(fields: [propertyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   propertyId        Int
   depositAmount     Int
