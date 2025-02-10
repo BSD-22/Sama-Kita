@@ -1,44 +1,25 @@
 import { Router } from 'express';
-import authController from '../controllers/authController';
-import errorHandler from '../middlewares/errorHandler';
 import { authentication } from '../middlewares/authentication';
+import errorHandler from '../middlewares/errorHandler';
 import llmController from '../controllers/llmController';
-import propertyController from '../controllers/propertyController';
-import { upload } from '../helpers/multer';
-import midtransController from '../controllers/midtransController';
+import authRoutes from './auth';
+import propertyRoutes from './property';
+import renterRoutes from './renter';
+import paymentRoutes from './payment';
+import llmRoutes from './llm';
 
 const router = Router();
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/login/otp', authController.loginOtp);
-router.post('/login-google', authController.googleLogin);
-router.post('/user', authController.getUserByEmail);
+// Public routes
+router.use('/', authRoutes);
 router.post('/llm', llmController.getResponsePublic);
 
+// Protected routes
 router.use(authentication);
-
-router.get('/logout', authController.handleLogout);
-router.get('/all-data', propertyController.getAllData);
-router.get('/response-graph-performance', llmController.getPropertySummary);
-router.get('/properties', propertyController.getPropertyByUser);
-router.post('/property', upload.single('propertyImage'), propertyController.addProperty);
-router.get('/renters', propertyController.getRentersByUser);
-router.post('/renters', upload.single('invoice'), propertyController.addRentersExpenses);
-router.get('/renter/:id', propertyController.getRenterById);
-router.delete('/renter/:id', propertyController.deleteRenterById);
-router.get('/occupancies', propertyController.getOcuppancies);
-router.post('/midtrans-getaway-payment', midtransController.midtransPayment);
-router.get('/check-payment-status/:orderId/renter/:renterId', midtransController.checkPaymentStatus);
-router.get('/property/:id', propertyController.getPropertyById);
-router.get('/property/rooms/:roomId', propertyController.getRoomById);
-router.post('/property/:propertyId/add', upload.single('roomImage'), propertyController.addRoomByPropertyId);
-router.put('/property/:propertyId/edit-room/:roomId', upload.single('roomImage'), propertyController.editRoomById);
-
-// Front Desk Routes
-router.post('/renters/add', propertyController.addNewRenter);
-router.put('/renters/:id/end-contract', propertyController.endRenterContract);
-router.put('/renters/:id/complete-payment', propertyController.completeManualPayment);
+router.use('/properties', propertyRoutes);
+router.use('/renters', renterRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/llm', llmRoutes);
 
 router.use(errorHandler);
 

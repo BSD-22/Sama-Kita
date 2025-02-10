@@ -4,17 +4,6 @@ import { imagekit } from '../helpers/imagekit';
 
 const prisma = new PrismaClient();
 
-type RenterExpenses = {
-  id: number;
-  renterId: number;
-  serviceDate: Date;
-  serviceDescription: string;
-  servicePrice: number;
-  serviceInvoice: string;
-  lastPaymentDate: Date;
-  maintenanceType: string;
-};
-
 export default class propertyController {
   static async getPropertyByUser(req: Request, res: Response, next: NextFunction) {
     try {
@@ -168,50 +157,6 @@ export default class propertyController {
     }
   }
 
-  static async getRentersByUser(req: Request<unknown, unknown, unknown>, res: Response, next: NextFunction) {
-    try {
-      const renters = await prisma.renter.findMany({
-        where: {
-          userId: req.loginInfo?.userId,
-        },
-        include: {
-          property: true,
-          RenterExpenses: true,
-          room: true,
-          RenterTransaction: true,
-        },
-      });
-
-      res.status(200).json(renters);
-    } catch (err) {
-      console.log(err);
-      next(err);
-    }
-  }
-
-  static async getRenterById(req: Request<{ id: string }, unknown, unknown>, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-
-      const renter = await prisma.renter.findUnique({
-        where: {
-          id: +id,
-        },
-        include: {
-          RenterExpenses: true,
-          room: true,
-          RenterTransaction: true,
-        },
-      });
-      if (!renter) throw { name: 'NotFoundError' };
-
-      res.status(200).json(renter);
-    } catch (err) {
-      console.log(err);
-      next(err);
-    }
-  }
-
   static async getRoomById(req: Request<{ roomId: string }, unknown, unknown>, res: Response, next: NextFunction) {
     try {
       const { roomId } = req.params;
@@ -231,46 +176,6 @@ export default class propertyController {
       if (!room) throw { name: 'NotFoundError' };
 
       res.status(200).json(room);
-    } catch (err) {
-      console.log(err);
-      next(err);
-    }
-  }
-
-  static async addRentersExpenses(req: Request<{ propertyId: string }, unknown, RenterExpenses>, res: Response, next: NextFunction) {
-    try {
-      const { renterId, serviceDate, serviceDescription, maintenanceType, servicePrice, lastPaymentDate } = req.body;
-
-      if (!req.file) throw { name: 'NoFileError' };
-      const imgFile = req.file.buffer.toString('base64');
-
-      const serviceInvoice = await imagekit
-        .upload({
-          file: imgFile,
-          fileName: req.file?.originalname,
-        })
-        .catch((err) => {
-          throw { name: 'UploadError', message: 'Failed to upload file', details: err };
-        });
-
-      const renterExists = await prisma.renter.findUnique({ where: { id: +renterId } });
-      if (!renterExists) {
-        throw { name: 'NotFoundError' };
-      }
-
-      const renterexpense = await prisma.renterExpenses.create({
-        data: {
-          renterId: +renterId,
-          serviceDate: new Date(serviceDate),
-          serviceDescription,
-          maintenanceType,
-          serviceInvoice: serviceInvoice.url,
-          servicePrice: +servicePrice,
-          lastPaymentDate: new Date(lastPaymentDate),
-        },
-      });
-
-      res.status(200).json(renterexpense);
     } catch (err) {
       console.log(err);
       next(err);
@@ -369,42 +274,6 @@ export default class propertyController {
     }
   }
 
-  static async deleteRenterById(req: Request<{ id: string }, unknown, unknown>, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-
-      // Get renter details first to know which individual room to update
-      const renter = await prisma.renter.findUnique({
-        where: { id: +id },
-        include: {
-          individualRoom: true,
-        },
-      });
-
-      if (!renter) throw { name: 'NotFoundError' };
-
-      const result = await prisma.$transaction(async (tx) => {
-        // Update individual room status back to Available
-        await tx.individualRoom.update({
-          where: { id: renter.individualRoomId },
-          data: { status: 'Available' },
-        });
-
-        // Delete the renter
-        const deletedRenter = await tx.renter.delete({
-          where: { id: +id },
-        });
-
-        return deletedRenter;
-      });
-
-      res.status(200).json(result);
-    } catch (err) {
-      console.log(err);
-      next(err);
-    }
-  }
-
   static async getAllData(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.loginInfo?.userId;
@@ -488,155 +357,6 @@ export default class propertyController {
     } catch (error) {
       console.error('Error in addProperty:', error);
       next(error);
-    }
-  }
-
-  static async addNewRenter(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { renterName, renterEmail, renterPhone, depositAmount, roomId } = req.body;
-      const userId = req.loginInfo?.userId;
-
-      if (!userId) throw { name: 'AuthenticationError' };
-
-      // Get room details first
-      const roomDetails = await prisma.room.findUnique({
-        where: { id: +roomId },
-      });
-
-      if (!roomDetails) throw { name: 'NotFoundError', message: 'Room not found' };
-
-      // Find an available individual room
-      const availableRoom = await prisma.individualRoom.findFirst({
-        where: {
-          roomId: +roomId,
-          status: 'Available',
-        },
-      });
-
-      if (!availableRoom) throw { name: 'ValidationError', message: 'No available rooms of this type' };
-
-      const result = await prisma.$transaction(async (tx) => {
-        const renter = await tx.renter.create({
-          data: {
-            renterName,
-            renterEmail,
-            renterPhone,
-            depositAmount: +depositAmount,
-            userId: +userId,
-            roomId: +roomId,
-            individualRoomId: availableRoom.id,
-            propertyId: roomDetails.propertyId, // Use roomDetails instead of room
-            joinDate: new Date(),
-            leaveDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-            ktpNumber: '',
-          },
-        });
-
-        await tx.individualRoom.update({
-          where: { id: availableRoom.id },
-          data: { status: 'Rented' },
-        });
-
-        return renter;
-      });
-
-      res.status(201).json(result);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  static async endRenterContract(req: Request<{ id: string }>, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const userId = req.loginInfo?.userId;
-
-      if (!userId) throw { name: 'AuthenticationError' };
-
-      // Get renter details
-      const renter = await prisma.renter.findUnique({
-        where: { id: +id },
-        include: { room: true },
-      });
-
-      if (!renter) throw { name: 'NotFoundError', message: 'Renter not found' };
-      if (renter.hasLeaved) throw { name: 'ValidationError', message: 'Renter has already left' };
-
-      // Start a transaction
-      const result = await prisma.$transaction(async (tx) => {
-        // Update renter status
-        const updatedRenter = await tx.renter.update({
-          where: { id: +id },
-          data: {
-            hasLeaved: true,
-            leaveDate: new Date(), // Set leave date to today
-          },
-        });
-
-        // Update room status
-        await tx.room.update({
-          where: { id: renter.roomId },
-          data: { status: 'Available' },
-        });
-
-        return updatedRenter;
-      });
-
-      res.status(200).json(result);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  static async completeManualPayment(req: Request<{ id: string }>, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const userId = req.loginInfo?.userId;
-
-      if (!userId) throw { name: 'AuthenticationError' };
-
-      // Get renter details
-      const renter = await prisma.renter.findUnique({
-        where: { id: +id },
-        include: {
-          room: true,
-          RenterTransaction: {
-            where: {
-              paymentStatus: false,
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-            take: 1,
-          },
-        },
-      });
-
-      if (!renter) throw { name: 'NotFoundError', message: 'Renter not found' };
-      if (renter.hasLeaved) throw { name: 'ValidationError', message: 'Renter has already left' };
-
-      // If there's a pending transaction, mark it as paid
-      if (renter.RenterTransaction.length > 0) {
-        const transaction = renter.RenterTransaction[0];
-        await prisma.renterTransaction.update({
-          where: { id: transaction.id },
-          data: { paymentStatus: true },
-        });
-      }
-
-      // Create a new transaction record for the manual payment
-      const result = await prisma.renterTransaction.create({
-        data: {
-          renterId: +id,
-          orderId: `MANUAL-${Date.now()}`,
-          paymentStatus: true,
-          amount: renter.room.price,
-        },
-      });
-
-      res.status(200).json(result);
-    } catch (err) {
-      next(err);
     }
   }
 }

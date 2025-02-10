@@ -32,7 +32,7 @@ export default function EditRoomPage() {
 
   const fetchRoomById = async () => {
     try {
-      const { data } = await axios.get(baseUrl + `/property/rooms/${roomId}`, {
+      const { data } = await axios.get(baseUrl + `/properties/rooms/${roomId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
         },
@@ -46,7 +46,8 @@ export default function EditRoomPage() {
 
   useEffect(() => {
     fetchRoomById();
-  }, [roomId]); // Adding `roomId` as a dependency
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, formData: FormData) => {
     e.preventDefault();
@@ -65,7 +66,7 @@ export default function EditRoomPage() {
     }
 
     try {
-      await axios.put(`http://localhost:8080/property/${propertyId}/edit-room/${roomId}`, formDataToSubmit, {
+      await axios.put(`http://localhost:8080/properties/${propertyId}/edit-room/${roomId}`, formDataToSubmit, {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
           "Content-Type": "multipart/form-data",

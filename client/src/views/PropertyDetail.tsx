@@ -48,7 +48,7 @@ export default function PropertyDetail() {
 
   async function getPropertyDetail() {
     try {
-      const { data } = await axios.get(baseUrl + `/property/${id}`, {
+      const { data } = await axios.get(baseUrl + `/properties/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
         },
