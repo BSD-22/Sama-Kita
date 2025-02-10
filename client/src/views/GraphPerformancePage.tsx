@@ -66,7 +66,7 @@ export default function Dashboard() {
 
   const fetchSummary = async (): Promise<void> => {
     try {
-      const { data } = await axios.get<Summary>(baseUrl + "/response-graph-performance", {
+      const { data } = await axios.get<Summary>(baseUrl + "/llm/response-graph-performance", {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
         },

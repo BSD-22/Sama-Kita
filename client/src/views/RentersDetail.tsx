@@ -83,7 +83,7 @@ export default function RentersDetail() {
   const handleSendInvoice = async (renterId: number) => {
     try {
       const { data } = await axios.post(
-        baseUrl + "/midtrans-getaway-payment",
+        baseUrl + "/payments/midtrans-getaway-payment",
         { renterId },
         {
           headers: {
@@ -100,7 +100,7 @@ export default function RentersDetail() {
 
   const checkPaymentStatus = async (orderId: number, renterId: number) => {
     try {
-      const { data } = await axios.get(baseUrl + `/check-payment-status/${orderId}/renter/${renterId}`, {
+      const { data } = await axios.get(baseUrl + `/payments/check-payment-status/${orderId}/renter/${renterId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
         },

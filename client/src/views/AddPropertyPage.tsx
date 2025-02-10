@@ -72,7 +72,7 @@ export default function AddPropertyPage() {
       formData.append("dueDate", dueDate);
       formData.append("propertyImage", propertyImage);
 
-      await axios.post(baseUrl + "/property", formData, {
+      await axios.post(baseUrl + "/properties", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.access_token}`,
@@ -84,7 +84,7 @@ export default function AddPropertyPage() {
         description: "Property created successfully!",
       });
 
-      navigate("/property");
+      navigate("/properties");
     } catch (error) {
       console.error("Error creating property:", error);
       toast({
