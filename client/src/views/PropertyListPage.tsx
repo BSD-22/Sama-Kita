@@ -48,9 +48,11 @@ export default function PropertyListPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Properties</h2>
-        <Button onClick={() => navigate("/property/add")}>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Properties</h2>
+        <Button
+          onClick={() => navigate("/property/add")}
+          className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" /> Add Property
         </Button>
       </div>
@@ -60,12 +62,11 @@ export default function PropertyListPage() {
           <p>Loading properties...</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {properties.map((property) => (
             <Card
               key={property.id}
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate(`/property/${property.id}`)}>
+              className="cursor-pointer hover:shadow-lg transition-shadow">
               <CardHeader className="relative p-0">
                 <img
                   src={property.propertyImage}
@@ -74,7 +75,7 @@ export default function PropertyListPage() {
                 />
               </CardHeader>
               <CardContent className="p-4">
-                <CardTitle className="text-xl mb-2">{property.propertyName}</CardTitle>
+                <CardTitle className="text-lg md:text-xl mb-2">{property.propertyName}</CardTitle>
                 <div className="text-sm text-muted-foreground">
                   <p>Due Date: {new Date(property.dueDate).toLocaleDateString()}</p>
                   <p>Total Rooms: {getTotalRooms(property)}</p>

@@ -48,10 +48,9 @@ export default function PropertyDetail() {
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Property Header */}
-      <div className="bg-gray-100 text-black border border-gray-300 rounded-lg p-6 mb-6 shadow-md">
-        <div className="flex items-center gap-6">
-          <div className="w-24 h-24 bg-gray-600 rounded-md flex items-center justify-center">
-            {/* Property Image */}
+      <div className="bg-gray-100 text-black border border-gray-300 rounded-lg p-4 md:p-6 mb-6 shadow-md">
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          <div className="w-full md:w-24 h-24 bg-gray-600 rounded-md flex items-center justify-center">
             {property?.propertyImage && (
               <img
                 src={property.propertyImage}
@@ -60,8 +59,8 @@ export default function PropertyDetail() {
               />
             )}
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">{property?.propertyName}</h1>
+          <div className="text-center md:text-left">
+            <h1 className="text-xl md:text-2xl font-bold">{property?.propertyName}</h1>
             <p className="text-sm text-black mt-1">Property ID: {property?.id}</p>
           </div>
         </div>
@@ -70,7 +69,7 @@ export default function PropertyDetail() {
       {/* Rooms Section */}
       <div>
         <h2 className="text-xl font-semibold text-gray-700 mb-4">Rooms</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {property?.Room?.map((room) => (
             <div
               key={room.id}
@@ -112,16 +111,16 @@ export default function PropertyDetail() {
         </div>
       </div>
 
-      {/* Button for Renters */}
-      <div className="mt-8 flex justify-between">
+      {/* Buttons */}
+      <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-between">
         <Button
           onClick={() => navigate(`/property/${property?.id}/renters`)}
-          className="px-6 py-5 text-white font-medium rounded-md focus:outline-none shadow-md">
+          className="w-full sm:w-auto">
           See Renter Details
         </Button>
         <Button
           onClick={() => navigate(`/property/${property?.id}/add`)}
-          className="px-6 py-5 text-white font-medium rounded-md focus:outline-none shadow-md">
+          className="w-full sm:w-auto">
           Add More Rooms
         </Button>
       </div>

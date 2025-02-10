@@ -149,62 +149,66 @@ export default function RentersDetail() {
   };
 
   return (
-    <div>
-      <Table
-        className="w-full"
-        style={{ tableLayout: "fixed" }}>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-center">Name</TableHead>
-            <TableHead className="text-center">Periode Sewa</TableHead>
-            <TableHead className="text-center">Tanggal Jatuh Tempo</TableHead>
-            <TableHead className="text-center">Harga Pembayaran</TableHead>
-            <TableHead className="text-center">Status</TableHead>
-            <TableHead className="text-center">Bukti Pembayaran</TableHead>
-            <TableHead className="text-center">Send Invoice</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {renters.map((renter) =>
-            renter.RenterExpenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="text-center">{renter.renterName}</TableCell>
-                <TableCell className="text-center whitespace-nowrap">
-                  {new Date(renter.joinDate).toLocaleDateString("id-ID")} - {new Date(renter.leaveDate).toLocaleDateString("id-ID")}
-                </TableCell>
-                <TableCell className="text-center">{new Date(renter.property.dueDate).toLocaleDateString("id-ID")}</TableCell>
-                <TableCell className="text-center">Rp. {renter.room.price.toLocaleString()}</TableCell>
-                <TableCell className="text-center p-0 w-max">
-                  <span>{renter.paymentStatus ? "Paid" : "Unpaid"}</span>
-                </TableCell>
-                <TableCell className="text-center">
-                  {expense.serviceInvoice ? (
-                    <button
-                      onClick={() => handleInvoiceClick(expense.serviceInvoice)}
-                      className="text-blue-500 underline">
-                      View Invoice
-                    </button>
-                  ) : (
-                    "No Invoice"
-                  )}
-                </TableCell>
-                <TableCell className="text-center">
-                  <Button onClick={() => handleSendInvoice(renter.id)}>Send Invoice</Button>
-                </TableCell>
-                <TableCell className="text-center flex items-center justify-center relative top-1">
-                  <button className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full hover:bg-gray-200">
-                    <X
-                      size={20}
-                      onClick={() => handleDelete(renter.id)}
-                    />
-                  </button>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+    <div className="p-4">
+      <div className="overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
+        <div className="inline-block min-w-full py-2 align-middle px-4 sm:px-6 lg:px-8">
+          <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+            <Table className="min-w-full divide-y divide-gray-300">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</TableHead>
+                  <TableHead className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Periode Sewa</TableHead>
+                  <TableHead className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tanggal Jatuh Tempo</TableHead>
+                  <TableHead className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Harga Pembayaran</TableHead>
+                  <TableHead className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</TableHead>
+                  <TableHead className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Bukti Pembayaran</TableHead>
+                  <TableHead className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Send Invoice</TableHead>
+                  <TableHead className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {renters.map((renter) =>
+                  renter.RenterExpenses.map((expense) => (
+                    <TableRow key={expense.id}>
+                      <TableCell className="text-center">{renter.renterName}</TableCell>
+                      <TableCell className="text-center whitespace-nowrap">
+                        {new Date(renter.joinDate).toLocaleDateString("id-ID")} - {new Date(renter.leaveDate).toLocaleDateString("id-ID")}
+                      </TableCell>
+                      <TableCell className="text-center">{new Date(renter.property.dueDate).toLocaleDateString("id-ID")}</TableCell>
+                      <TableCell className="text-center">Rp. {renter.room.price.toLocaleString()}</TableCell>
+                      <TableCell className="text-center p-0 w-max">
+                        <span>{renter.paymentStatus ? "Paid" : "Unpaid"}</span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {expense.serviceInvoice ? (
+                          <button
+                            onClick={() => handleInvoiceClick(expense.serviceInvoice)}
+                            className="text-blue-500 underline">
+                            View Invoice
+                          </button>
+                        ) : (
+                          "No Invoice"
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button onClick={() => handleSendInvoice(renter.id)}>Send Invoice</Button>
+                      </TableCell>
+                      <TableCell className="text-center flex items-center justify-center relative top-1">
+                        <button className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full hover:bg-gray-200">
+                          <X
+                            size={20}
+                            onClick={() => handleDelete(renter.id)}
+                          />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
 
       {/* Modal for displaying the invoice */}
       {isModalOpen && (
