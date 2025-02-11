@@ -50,7 +50,6 @@ export default function App() {
             path="/frontdesk"
             element={<FrontDeskPage />}
           />
-
           <Route
             path="/property"
             element={<PropertyListPage />}
@@ -75,9 +74,12 @@ export default function App() {
             path="/property/:propertyId/edit/:roomId"
             element={<EditRoomPage />}
           />
-
           <Route
-            path="/expenses/maintenance"
+            path="/expenses/maintenance/operational"
+            element={<MaintenancePage />}
+          />
+          <Route
+            path="/expenses/maintenance/non-operational"
             element={<MaintenancePage />}
           />
           <Route

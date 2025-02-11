@@ -13,6 +13,7 @@ export function Sidebar({ className }: SidebarProps) {
   const userEmail = localStorage.getItem("email") || "user@email.com";
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -42,7 +43,15 @@ export function Sidebar({ className }: SidebarProps) {
       category: "Expenses",
       icon: <SquareActivity className="w-4 h-4" />,
       items: [
-        { name: "Maintenance", path: "/expenses/maintenance" },
+        { 
+          name: "Maintenance", 
+          path: "#",
+          isDropdown: true,
+          dropdownItems: [
+            { name: "Operational", path: "/expenses/maintenance/operational" },
+            { name: "Non Operational", path: "/expenses/maintenance/non-operational" }
+          ]
+        },
         { name: "Add Expenses", path: "/expenses/add" },
       ],
     },
@@ -77,16 +86,57 @@ export function Sidebar({ className }: SidebarProps) {
             </div>
             {!isCollapsed &&
               section.items.map((item, itemIdx) => (
-                <Link
-                  key={itemIdx}
-                  to={item.path}
-                  className={cn(
-                    "px-4 py-2 text-sm block transition-all duration-200",
-                    location.pathname === item.path ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100",
-                    isCollapsed && "text-center"
-                  )}>
-                  {item.name}
-                </Link>
+                <div key={itemIdx}>
+                  {item.isDropdown ? (
+                    <>
+                      <button
+                        onClick={() => setActiveDropdown(activeDropdown === item.name ? null : item.name)}
+                        className={cn(
+                          "w-full px-4 py-2 text-sm flex items-center justify-between transition-all duration-200",
+                          activeDropdown === item.name ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"
+                        )}
+                      >
+                        <span>{item.name}</span>
+                        <ChevronRight className={cn(
+                          "w-4 h-4 transition-transform duration-200",
+                          activeDropdown === item.name && "rotate-90"
+                        )} />
+                      </button>
+                      <div className={cn(
+                        "overflow-hidden transition-all duration-200",
+                        activeDropdown === item.name ? "max-h-40" : "max-h-0"
+                      )}>
+                        {item.dropdownItems?.map((dropdownItem, dropIdx) => (
+                          <Link
+                            key={dropIdx}
+                            to={dropdownItem.path}
+                            className={cn(
+                              "block px-8 py-2 text-sm transition-all duration-200",
+                              location.pathname === dropdownItem.path
+                                ? "bg-primary/10 text-primary"
+                                : "text-gray-600 hover:bg-gray-100"
+                            )}
+                          >
+                            {dropdownItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      className={cn(
+                        "px-4 py-2 text-sm block transition-all duration-200",
+                        location.pathname === item.path
+                          ? "bg-primary/10 text-primary"
+                          : "text-gray-600 hover:bg-gray-100",
+                        isCollapsed && "text-center"
+                      )}
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                </div>
               ))}
           </div>
         ))}

@@ -1,6 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
 import Groq from 'groq-sdk';
 import { ChatCompletion } from 'groq-sdk/resources/chat/completions';
+
+import { NextFunction, Request, Response } from 'express';
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

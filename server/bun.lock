@@ -4,7 +4,7 @@
     "": {
       "name": "server",
       "dependencies": {
-        "@prisma/client": "^6.1.0",
+        "@prisma/client": "^6.3.1",
         "axios": "^1.7.9",
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
@@ -154,7 +154,7 @@
 
     "@pkgr/core": ["@pkgr/core@0.1.1", "", {}, "sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA=="],
 
-    "@prisma/client": ["@prisma/client@6.1.0", "", { "peerDependencies": { "prisma": "*" } }, "sha512-AbQYc5+EJKm1Ydfq3KxwcGiy7wIbm4/QbjCKWWoNROtvy7d6a3gmAGkKjK0iUCzh+rHV8xDhD5Cge8ke/kiy5Q=="],
+    "@prisma/client": ["@prisma/client@6.3.1", "", { "peerDependencies": { "prisma": "*", "typescript": ">=5.1.0" }, "optionalPeers": ["prisma", "typescript"] }, "sha512-ARAJaPs+eBkemdky/XU3cvGRl+mIPHCN2lCXsl5Vlb0E2gV+R6IN7aCI8CisRGszEZondwIsW9Iz8EJkTdykyA=="],
 
     "@prisma/debug": ["@prisma/debug@6.1.0", "", {}, "sha512-0himsvcM4DGBTtvXkd2Tggv6sl2JyUYLzEGXXleFY+7Kp6rZeSS3hiTW9mwtUlXrwYbJP6pwlVNB7jYElrjWUg=="],
 
