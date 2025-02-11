@@ -86,7 +86,7 @@ export default function PropertiesPage() {
                   alt={property.propertyName}
                   className="w-full h-48 object-cover rounded-md"
                 />
-                <Link to={`/property/${property.id}`}>
+                <Link to={`/properties/${property.id}`}>
                   <Button
                     variant="outline"
                     className="w-full">

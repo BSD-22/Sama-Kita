@@ -97,7 +97,7 @@ export default function AddRenterPage() {
 
   const fetchRooms = async (propertyId: string) => {
     try {
-      const response = await axios.get(baseUrl + `/rooms/property/${propertyId}`, {
+      const response = await axios.get(baseUrl + `/rooms/properties/${propertyId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
         },

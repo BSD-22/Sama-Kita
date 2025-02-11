@@ -51,7 +51,7 @@ export default function PropertyListPage() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Properties</h2>
         <Button
-          onClick={() => navigate("/property/add")}
+          onClick={() => navigate("/properties/add")}
           className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" /> Add Property
         </Button>
@@ -66,7 +66,7 @@ export default function PropertyListPage() {
           {properties.map((property) => (
             <Card
               key={property.id}
-              onClick={() => navigate(`/property/${property.id}`)}
+              onClick={() => navigate(`/properties/${property.id}`)}
               className="cursor-pointer hover:shadow-lg transition-shadow">
               <CardHeader className="relative p-0">
                 <img
@@ -88,7 +88,7 @@ export default function PropertyListPage() {
                   className="w-full"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/property/${property.id}/add`);
+                    navigate(`/properties/${property.id}/add`);
                   }}>
                   Add Room
                 </Button>
@@ -101,7 +101,7 @@ export default function PropertyListPage() {
       {!loading && properties.length === 0 && (
         <div className="text-center py-10">
           <p className="text-muted-foreground mb-4">No properties found</p>
-          <Button onClick={() => navigate("/property/add")}>
+          <Button onClick={() => navigate("/properties/add")}>
             <Plus className="mr-2 h-4 w-4" /> Add Your First Property
           </Button>
         </div>
