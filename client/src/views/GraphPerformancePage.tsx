@@ -1,204 +1,226 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
-import { useAppDispatch, useAppSelector } from "@/store/hook";
-import { fetchRenters } from "@/store/renters";
-import { fetchProperties } from "@/store/properties";
+import { BarChart, Card, Title } from "@tremor/react";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { baseUrl } from "@/constants/baseUrl";
+import { GraphLoadingState } from '@/components/GraphLoadingState';
+import { TierSpecificAnalytics } from '@/components/TierSpecificAnalytics';
 
-// Register necessary components for Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-type RecentSales = {
+type Transaction = {
   amount: number;
   orderId: string;
   paymentStatus: boolean;
   renterName: string;
+  date?: Date;
 };
 
-type PeriodSummary = {
+type PeriodData = {
   totalRevenue: number;
   nettProfit: number;
   averageOccupancyRate: string;
-  recentSales: RecentSales[];
+  totalProperties: number;
+  predictedOccupancy?: string;
+  recentTransactions?: Transaction[];
+  expenseBreakdown?: {
+    maintenance: number;
+    utilities: number;
+  };
+  propertyWiseAnalysis?: Array<{
+    propertyName: string;
+    revenue: number;
+    occupancyRate: string;
+    expenses: number;
+  }>;
+  monthlyTrends?: Array<{
+    month: string;
+    revenue: number;
+    occupancyRate: string;
+  }>;
+  previousPeriod?: {
+    totalRevenue: number;
+    nettProfit: number;
+  };
 };
 
-type Summary = {
-  oneMonth: PeriodSummary;
-  sixMonths: PeriodSummary;
-  oneYear: PeriodSummary;
+type DashboardData = {
+  oneMonth?: PeriodData;
+  sixMonths?: PeriodData;
+  oneYear?: PeriodData;
+};
+
+const calculatePercentageChange = (current: number, previous: number): string => {
+  if (previous === 0) return current === 0 ? "0%" : "+∞%";
+  const change = ((current - previous) / previous) * 100;
+  if (Math.abs(change) > 1000) return change > 0 ? "+999+%" : "-999+%";
+  return `${change > 0 ? "+" : ""}${change.toFixed(1)}%`;
 };
 
 export default function Dashboard() {
+  const { tier } = useSubscription();
   const [selectedPeriod, setSelectedPeriod] = useState<"oneMonth" | "sixMonths" | "oneYear">("oneMonth");
-  const [averageOccupancyRate, setAverageOccupancyRate] = useState<string>("");
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [revenue, setRevenue] = useState<number>(0);
   const [nettProfit, setNettProfit] = useState<number>(0);
-  const [recentSales, setRecentSales] = useState<RecentSales[]>([]);
+  const [averageOccupancyRate, setAverageOccupancyRate] = useState<string>("0");
   const [previousRevenue, setPreviousRevenue] = useState<number>(0);
   const [previousNettProfit, setPreviousNettProfit] = useState<number>(0);
+  const [propertiesCount, setPropertiesCount] = useState<number>(0);
+  const [chartData, setChartData] = useState<any[]>([]);
 
-  const [barData, setBarData] = useState({
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    datasets: [
-      {
-        label: "Revenue",
-        data: Array(12).fill(0),
-        backgroundColor: "rgba(255, 223, 186, 0.8)",
-        borderColor: "rgba(240, 169, 108, 1)",
-        borderWidth: 1,
-      },
-    ],
-  });
-
-  const renters = useAppSelector((state) => state.renters.renters);
-  const properties = useAppSelector((state) => state.properties.properties);
-  const dispatch = useAppDispatch();
-
-  const calculatePercentageChange = (current: number, previous: number): string => {
-    if (previous === 0) {
-      return current === 0 ? "0%" : "+100%"; // Prevent division by zero
-    }
-    const change = ((current - previous) / previous) * 100;
-    return `${change > 0 ? "+" : ""}${change.toFixed(1)}%`;
-  };
-
-  const fetchSummary = async (): Promise<void> => {
+  const fetchData = async () => {
     try {
-      const { data } = await axios.get<Summary>(baseUrl + "/llm/response-graph-performance", {
+      const response = await fetch(`${baseUrl}/dashboard/performance?period=${selectedPeriod}`, {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
+          'X-Subscription-Tier': tier
         },
       });
 
-      const summary = data;
+      if (!response.ok) throw new Error('Failed to fetch data');
+      
+      const result = await response.json();
+      
+      setData(result);
+      
+      if (result[selectedPeriod]) {
+        const currentPeriodData = result[selectedPeriod];
+        setRevenue(currentPeriodData.totalRevenue);
+        setNettProfit(currentPeriodData.nettProfit);
+        setAverageOccupancyRate(currentPeriodData.averageOccupancyRate);
+        setPropertiesCount(currentPeriodData.totalProperties);
 
-      // Period mapping for dynamic data retrieval
-      const periods: { [key: string]: PeriodSummary } = {
-        oneMonth: summary.oneMonth,
-        sixMonths: summary.sixMonths,
-        oneYear: summary.oneYear,
-      };
+        if (currentPeriodData.monthlyTrends) {
+          const formattedData = currentPeriodData.monthlyTrends.map((trend: { month: string; revenue: number }, index: number) => ({
+            key: `trend-${index}-${trend.month}`,
+            month: trend.month,
+            Revenue: trend.revenue,
+          }));
+          setChartData(formattedData);
+        }
 
-      const currentPeriod = periods[selectedPeriod];
-      const previousPeriod =
-        selectedPeriod === "oneMonth"
-          ? summary.sixMonths // Use six months data for estimating previous one month
-          : selectedPeriod === "sixMonths"
-          ? summary.oneYear // Use one year data for estimating previous six months
-          : { totalRevenue: 0, nettProfit: 0, recentSales: [] }; // No previous period for one year
+        if (currentPeriodData.previousPeriod) {
+          setPreviousRevenue(currentPeriodData.previousPeriod.totalRevenue);
+          setPreviousNettProfit(currentPeriodData.previousPeriod.nettProfit);
+        }
+      }
 
-      const previousRevenue = previousPeriod.totalRevenue / (selectedPeriod === "oneMonth" ? 6 : 2);
-      const previousNettProfit = previousPeriod.nettProfit / (selectedPeriod === "oneMonth" ? 6 : 2);
-
-      setRevenue(currentPeriod.totalRevenue);
-      setNettProfit(currentPeriod.nettProfit);
-      setAverageOccupancyRate(currentPeriod.averageOccupancyRate);
-      setRecentSales(currentPeriod.recentSales);
-
-      setPreviousRevenue(previousRevenue);
-      setPreviousNettProfit(previousNettProfit);
-
-      // Update chart data
-      setBarData((prevData) => ({
-        ...prevData,
-        datasets: [
-          {
-            ...prevData.datasets[0],
-            data: currentPeriod.recentSales.map((sale) => sale.amount),
-          },
-        ],
-      }));
+      setLoading(false);
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching data:', error);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    dispatch(fetchRenters());
-    dispatch(fetchProperties());
-    fetchSummary();
-  }, [selectedPeriod]);
+    fetchData();
+  }, [tier, selectedPeriod]);
 
   const handlePeriodChange = (period: "oneMonth" | "sixMonths" | "oneYear") => {
     setSelectedPeriod(period);
   };
 
-  const barOptions = {
-    responsive: true,
-    plugins: {
-      legend: { display: true },
-      title: { display: true, text: "Revenue by Year", color: "#333333" },
-    },
-    scales: {
-      x: { ticks: { color: "#333333" }, grid: { display: false } },
-      y: { ticks: { color: "#333333" }, grid: { color: "rgba(240, 240, 240, 0.4)" } },
-    },
-  };
+  if (loading || !data) {
+    return (
+      <div className="space-y-4">
+        <GraphLoadingState stages={[]} />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen text-gray-900 px-6 pb-10 pt-3">
-      <h2 className="mb-5 text-3xl font-extrabold text-gray-800">Dashboard</h2>
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-foreground/90">Performance Dashboard</h2>
+        {tier !== "PREMIUM" && (
+          <button 
+            onClick={() => window.location.href = '/subscription'}
+            className="w-full sm:w-auto bg-primary/90 hover:bg-primary text-primary-foreground px-4 py-2 rounded-lg transition-colors"
+          >
+            Upgrade to Premium
+          </button>
+        )}
+      </div>
 
-      {/* Period switcher */}
-      <div className="mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         {["oneMonth", "sixMonths", "oneYear"].map((period) => (
           <button
             key={period}
-            className={`mr-4 px-4 py-2 rounded-md ${selectedPeriod === period ? "bg-black text-white" : "bg-gray-200"}`}
+            className={`px-4 py-2 rounded-md text-sm transition-colors ${
+              selectedPeriod === period 
+                ? "bg-primary/90 text-primary-foreground" 
+                : "bg-muted hover:bg-muted/80 text-foreground/80"
+            }`}
             onClick={() => handlePeriodChange(period as "oneMonth" | "sixMonths" | "oneYear")}>
             {period.replace(/([A-Z])/g, " $1").trim()}
           </button>
         ))}
       </div>
 
-      {/* Top metrics section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="p-6 bg-white rounded-lg shadow">
-          <h3 className="text-sm text-gray-500">Total Revenue</h3>
-          <p className="text-3xl font-bold">Rp. {revenue.toLocaleString()}</p>
-          <p className="text-green-600 text-sm mt-2">{calculatePercentageChange(revenue, previousRevenue)}</p>
-        </div>
-        <div className="p-6 bg-white rounded-lg shadow">
-          <h3 className="text-sm text-gray-500">Nett Profit</h3>
-          <p className="text-3xl font-bold">Rp. {nettProfit.toLocaleString()}</p>
-          <p className="text-green-600 text-sm mt-2">{calculatePercentageChange(nettProfit, previousNettProfit)}</p>
-        </div>
-        <div className="p-6 bg-white rounded-lg shadow">
-          <h3 className="text-sm text-gray-500">Average Occupancy</h3>
-          <p className="text-3xl font-bold">{averageOccupancyRate}%</p>
-          <p className="text-gray-500 text-sm mt-2">Total Properties: {properties.length}</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <Card className="p-4 sm:p-6 bg-card">
+          <Title className="text-sm text-muted-foreground mb-2">Total Revenue</Title>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground">
+            Rp. {revenue.toLocaleString()}
+          </p>
+          <p className={`text-sm mt-2 ${
+            previousRevenue > revenue 
+              ? 'text-destructive/90' 
+              : 'text-emerald-600'
+          }`}>
+            {calculatePercentageChange(revenue, previousRevenue)}
+          </p>
+        </Card>
+        
+        <Card className="p-4 sm:p-6 bg-card">
+          <Title className="text-sm text-muted-foreground mb-2">Nett Profit</Title>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground">
+            Rp. {nettProfit.toLocaleString()}
+          </p>
+          <p className={`text-sm mt-2 ${
+            previousNettProfit > nettProfit 
+              ? 'text-destructive/90' 
+              : 'text-emerald-600'
+          }`}>
+            {calculatePercentageChange(nettProfit, previousNettProfit)}
+          </p>
+        </Card>
+        
+        <Card className="p-4 sm:p-6 bg-card">
+          <Title className="text-sm text-muted-foreground mb-2">Average Occupancy</Title>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground">
+            {averageOccupancyRate}%
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Total Properties: {propertiesCount}
+          </p>
+        </Card>
       </div>
 
-      {/* Middle section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="col-span-2 p-6 bg-white rounded-lg shadow">
-          <Bar
-            data={barData}
-            options={barOptions}
+      <Card className="p-4 sm:p-6 bg-card">
+        <Title className="text-sm text-muted-foreground mb-4">Revenue Trends</Title>
+        <div className="h-[300px] sm:h-[400px] w-full">
+          <BarChart
+            data={chartData}
+            index="month"
+            categories={["Revenue"]}
+            colors={["blue"]}
+            valueFormatter={(number) => `Rp. ${Intl.NumberFormat("id").format(number)}`}
+            showAnimation
+            showLegend={false}
+            showGridLines={false}
+            showYAxis={false}
+            startEndOnly
+            className="h-full [&_.tremor-BarChart-bar]:opacity-70 [&_.tremor-BarChart-bar]:hover:opacity-100 [&_.tremor-BarChart-bar]:transition-opacity"
           />
         </div>
-        <div className="p-6 bg-white rounded-lg shadow">
-          <h3 className="text-lg font-bold mb-4">Recent Sales</h3>
-          <ul className="space-y-4">
-            {recentSales.map((sale, index) => (
-              <li
-                key={index}
-                className="flex items-center justify-between">
-                <div>
-                  <p className="font-bold">{sale.renterName}</p>
-                  <p className={`text-sm ${sale.paymentStatus ? "text-green-600" : "text-red-500"}`}>{sale.paymentStatus ? "Completed" : "Pending"}</p>
-                </div>
-                <p className={`font-bold ${sale.paymentStatus ? "text-green-600" : "text-gray-500"}`}>
-                  {sale.paymentStatus ? `+Rp. ${sale.amount.toLocaleString()}` : `Rp. ${sale.amount.toLocaleString()}`}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      </Card>
+
+      {/* Tier-specific analytics */}
+      {data && data[selectedPeriod] && (
+        <TierSpecificAnalytics 
+          data={data[selectedPeriod]} 
+        />
+      )}
     </div>
   );
 }

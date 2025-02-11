@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router";
-import { Bot, LayoutDashboard, SquareActivity, MessageCircle, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { Bot, LayoutDashboard, SquareActivity, MessageCircle, ChevronLeft, ChevronRight, LogOut, Crown } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 interface SidebarProps {
   className?: string;
@@ -13,6 +14,7 @@ export function Sidebar({ className }: SidebarProps) {
   const userEmail = localStorage.getItem("email") || "user@email.com";
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+  const { tier } = useSubscription();
 
   const handleLogout = () => {
     localStorage.clear();
@@ -47,6 +49,32 @@ export function Sidebar({ className }: SidebarProps) {
       ],
     },
   ];
+
+  const renderSubscriptionBadge = () => {
+    const colors = {
+      FREE: "bg-gray-100 text-gray-600",
+      BASIC: "bg-blue-100 text-blue-600",
+      PREMIUM: "bg-purple-100 text-purple-600"
+    };
+
+    return (
+      <div className={`px-4 py-3 border-t ${!isCollapsed ? "flex items-center justify-between" : "text-center"}`}>
+        <div className={`flex items-center gap-2 ${isCollapsed ? "justify-center" : ""}`}>
+          <Crown className={`w-4 h-4 ${colors[tier].split(' ')[1]}`} />
+          {!isCollapsed && (
+            <>
+              <span className={`text-sm ${colors[tier]}`}>{tier} Plan</span>
+              {tier !== "PREMIUM" && (
+                <Link to="/subscription" className="text-xs text-primary hover:underline ml-2">
+                  Upgrade
+                </Link>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={cn("relative flex flex-col h-full bg-white border-r transition-all duration-300 ease-in-out", isCollapsed ? "w-20" : "w-64", className)}>
@@ -103,6 +131,9 @@ export function Sidebar({ className }: SidebarProps) {
           {!isCollapsed && <span>Customer Service</span>}
         </a>
       </div>
+
+      {/* Add subscription badge before user profile */}
+      {renderSubscriptionBadge()}
 
       {/* User Profile Section - Updated */}
       <div className="border-t mt-auto">
