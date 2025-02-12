@@ -126,6 +126,7 @@ model RenterExpenses {
   endDate             DateTime?       // For prepaid expenses, when the coverage ends
   dueDate             DateTime?       // When the payment is due
   isOverdue           Boolean         @default(false)
+  
 }
 
 model Renter {

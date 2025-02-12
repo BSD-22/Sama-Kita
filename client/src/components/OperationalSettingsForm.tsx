@@ -112,9 +112,9 @@ export default function OperationalSettingsForm({ propertyId, initialSettings, o
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {Object.entries(settings).map(([utility, setting]) => (
-        <div key={utility} className="p-4 border rounded-lg">
+        <div key={utility} className="p-4 border rounded-lg bg-white shadow-sm">
           <h3 className="capitalize text-lg font-medium mb-4">{utility}</h3>
           
           <div className="space-y-4">
@@ -166,7 +166,7 @@ export default function OperationalSettingsForm({ propertyId, initialSettings, o
         </div>
       ))}
 
-      <div className="flex justify-end">
+      <div className="md:col-span-3 flex justify-end mt-4">
         <Button type="submit">Save Settings</Button>
       </div>
     </form>

@@ -65,8 +65,8 @@ export default function PropertyOperationalSettings() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
+    <div className="max-w-7xl mx-auto px-4">
+      <div className="mb-6">
         <label className="text-sm font-medium">Select Property</label>
         <Select 
           onValueChange={(value) => setSelectedPropertyId(Number(value))}
@@ -86,7 +86,9 @@ export default function PropertyOperationalSettings() {
       </div>
 
       {loading ? (
-        <div>Loading settings...</div>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
       ) : (
         selectedPropertyId && (
           <OperationalSettingsForm 
