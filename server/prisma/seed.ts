@@ -1,15 +1,26 @@
-import { PrismaClient } from '@prisma/client';
 import { readFileSync } from 'fs';
+import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '../src/helpers/bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
   try {
+    // Clear existing data first
+    await prisma.$transaction([
+      prisma.renterTransaction.deleteMany(),
+      prisma.renterExpenses.deleteMany(),
+      prisma.renter.deleteMany(),
+      prisma.individualRoom.deleteMany(),
+      prisma.room.deleteMany(),
+      prisma.property.deleteMany(),
+      prisma.user.deleteMany(),
+    ]);
+
     // Read the combined JSON data
     const data = JSON.parse(readFileSync('data.json', 'utf-8'));
 
-    // Seed users first with duplicate checking
+    // Seed users with duplicate checking
     console.log('Seeding users...');
     for (const user of data.users) {
       try {
@@ -18,9 +29,9 @@ async function main() {
         });
 
         if (!existingUser) {
-          user.password = await hashPassword(user.password);
+          const hashedPassword = await hashPassword(user.password);
           await prisma.user.create({
-            data: user,
+            data: { ...user, password: hashedPassword },
           });
           console.log(`Created user: ${user.email}`);
         } else {
@@ -31,20 +42,16 @@ async function main() {
       }
     }
 
-    // Seed properties with error handling
+    // Seed properties
     console.log('\nSeeding properties...');
     for (const property of data.properties) {
       try {
         const existingProperty = await prisma.property.findFirst({
-          where: {
-            propertyName: property.propertyName,
-          }
+          where: { propertyName: property.propertyName }
         });
 
         if (!existingProperty) {
-          await prisma.property.create({
-            data: property,
-          });
+          await prisma.property.create({ data: property });
           console.log(`Created property: ${property.propertyName}`);
         } else {
           console.log(`Skipping duplicate property: ${property.propertyName}`);
@@ -54,7 +61,7 @@ async function main() {
       }
     }
 
-    // Seed rooms and create individual rooms with error handling
+    // Seed rooms and individual rooms
     console.log('\nSeeding rooms...');
     for (const room of data.rooms) {
       try {
@@ -66,14 +73,9 @@ async function main() {
         });
 
         if (!existingRoom) {
-          await prisma.room.create({
+          const createdRoom = await prisma.room.create({
             data: {
-              typeName: room.typeName,
-              price: room.price,
-              roomImage: room.roomImage,
-              Area: room.Area,
-              propertyId: room.propertyId,
-              totalRooms: room.totalRooms,
+              ...room,
               individualRooms: {
                 create: Array.from({ length: room.totalRooms }, (_, i) => ({
                   roomNumber: `${room.typeName}-${i + 1}`,
@@ -81,11 +83,8 @@ async function main() {
                 })),
               },
             },
-            include: {
-              individualRooms: true,
-            },
           });
-          console.log(`Created room type: ${room.typeName}`);
+          console.log(`Created room type ${room.typeName} with ${room.totalRooms} individual rooms`);
         } else {
           console.log(`Skipping duplicate room type: ${room.typeName}`);
         }
@@ -94,7 +93,7 @@ async function main() {
       }
     }
 
-    // Seed renters with error handling
+    // Seed renters and update individual room status
     console.log('\nSeeding renters...');
     for (const renter of data.renters) {
       try {
@@ -106,43 +105,21 @@ async function main() {
         });
 
         if (!existingRenter) {
-          // Find the room based on property and type
-          const room = await prisma.room.findFirst({
-            where: {
-              propertyId: renter.propertyId,
-              typeName: 'Standard',
-            },
-          });
-
-          if (!room) {
-            console.error(`Room not found for renter ${renter.renterName}`);
-            continue;
-          }
-
           await prisma.renter.create({
             data: {
-              renterName: renter.renterName,
-              renterEmail: renter.renterEmail,
-              renterPhone: renter.renterPhone,
-              ktpNumber: renter.ktpNumber,
-              depositAmount: renter.depositAmount,
+              ...renter,
               joinDate: new Date(renter.joinDate),
               leaveDate: new Date(renter.leaveDate),
-              hasLeaved: renter.hasLeaved,
-              user: {
-                connect: { id: renter.userId },
-              },
-              room: {
-                connect: { id: room.id },
-              },
-              individualRoom: {
-                connect: { id: renter.individualRoomId },
-              },
-              property: {
-                connect: { id: renter.propertyId },
-              },
             },
           });
+
+          if (!renter.hasLeaved) {
+            await prisma.individualRoom.update({
+              where: { id: renter.individualRoomId },
+              data: { status: 'Rented' },
+            });
+          }
+
           console.log(`Created renter: ${renter.renterName}`);
         } else {
           console.log(`Skipping duplicate renter: ${renter.renterName}`);
@@ -152,36 +129,39 @@ async function main() {
       }
     }
 
-    // Seed renter expenses with error handling
+    // Seed renter expenses
     console.log('\nSeeding renter expenses...');
-    for (const renterExpense of data.renterexpenses) {
+    for (const expense of data.renterexpenses) {
       try {
         await prisma.renterExpenses.create({
           data: {
-            ...renterExpense,
-            serviceDate: new Date(renterExpense.serviceDate),
-            lastPaymentDate: new Date(renterExpense.lastPaymentDate),
+            ...expense,
+            serviceDate: new Date(expense.serviceDate),
+            lastPaymentDate: new Date(expense.lastPaymentDate),
           },
         });
-        console.log(`Created expense for renter ID: ${renterExpense.renterId}`);
+        console.log(`Created expense for renter ID: ${expense.renterId}`);
       } catch (error) {
-        console.error(`Error processing expense for renter ID ${renterExpense.renterId}:`, error);
+        console.error(`Error processing expense for renter ID ${expense.renterId}:`, error);
       }
     }
 
-    // Seed renter transactions with error handling
+    // Seed renter transactions with unique orderIds
     console.log('\nSeeding renter transactions...');
-    for (const renterTransaction of data.rentertransactions) {
+    for (const transaction of data.rentertransactions) {
       try {
         await prisma.renterTransaction.create({
           data: {
-            ...renterTransaction,
-            createdAt: new Date(renterTransaction.createdAt),
+            ...transaction,
+            orderId: `${transaction.orderId}-${transaction.renterId}`,
+            createdAt: new Date(transaction.createdAt),
+            dueDate: new Date(transaction.dueDate),
+            paidAt: transaction.paidAt ? new Date(transaction.paidAt) : null,
           },
         });
-        console.log(`Created transaction for renter ID: ${renterTransaction.renterId}`);
+        console.log(`Created transaction for renter ID: ${transaction.renterId}`);
       } catch (error) {
-        console.error(`Error processing transaction for renter ID ${renterTransaction.renterId}:`, error);
+        console.error(`Error processing transaction for renter ID ${transaction.renterId}:`, error);
       }
     }
 
@@ -195,7 +175,7 @@ async function main() {
 main()
   .catch((e) => {
     console.error('Fatal error during seeding:', e);
-    throw new Error(e);
+    process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();

@@ -13,12 +13,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PREMIUM
+}
 
 model User {
-  id          Int         @id @default(autoincrement())
-  email       String      @unique
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
   password    String
   name        String?
+  subscription Subscription?
   OTP         OTP[]
   Renter      Renter[]
   Property    Property[]
@@ -125,6 +131,16 @@ model RenterTransaction {
   isOverdue         Boolean   @default(false)
   month             Int       // Add this to track which month this payment is for
   year              Int       // Add this to track which year this payment is for
+}
+
+model Subscription {
+  id          Int             @id @default(autoincrement())
+  userId      Int             @unique
+  user        User            @relation(fields: [userId], references: [id])
+  tier        SubscriptionTier @default(FREE)
+  startDate   DateTime        @default(now())
+  endDate     DateTime?
+  active      Boolean         @default(true)
 }
 
 

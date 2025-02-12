@@ -73,7 +73,7 @@ export default function EditRoomPage() {
         },
       });
 
-      navigate(`/property/${propertyId}`);
+      navigate(`/properties/${propertyId}`);
     } catch (error) {
       console.log(error);
     }

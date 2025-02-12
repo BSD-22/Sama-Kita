@@ -118,7 +118,7 @@ export default function RoomsPage() {
                   <p className="text-gray-500">Total Rooms: {room.totalRooms}</p>
                   <p className="text-gray-500">Available: {room.individualRooms?.filter((r: IndividualRoom) => r.status === "Available").length || 0}</p>
                 </div>
-                <Link to={`/property/${room.propertyId}/edit/${room.id}`}>
+                <Link to={`/properties/${room.propertyId}/edit/${room.id}`}>
                   <Button
                     variant="outline"
                     className="w-full">

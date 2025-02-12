@@ -16,13 +16,19 @@
       "propertyName": "Ben Gedung A",
       "userId": 2,
       "dueDate": 3,
-      "propertyImage": "https://example.com/property1.jpg"
+      "propertyImage": "https://example.com/properties1.jpg"
     },
     {
       "propertyName": "Awani Gedung B",
       "userId": 2,
       "dueDate": 3,
-      "propertyImage": "https://example.com/property2.jpg"
+      "propertyImage": "https://example.com/properties2.jpg"
+    },
+    {
+      "propertyName": "Awani Gedung C",
+      "userId": 2,
+      "dueDate": 5,
+      "propertyImage": "https://example.com/properties3.jpg"
     }
   ],
   "rooms": [
@@ -32,46 +38,59 @@
       "roomImage": "https://example.com/standard-room.jpg",
       "Area": 9,
       "propertyId": 1,
-      "totalRooms": 5
+      "totalRooms": 10
     },
     {
       "typeName": "Deluxe",
-      "price": 2500000,
+      "price": 2800000,
       "roomImage": "https://example.com/deluxe-room.jpg",
       "Area": 12,
       "propertyId": 1,
-      "totalRooms": 3
+      "totalRooms": 5
     },
     {
       "typeName": "Premium",
-      "price": 3000000,
+      "price": 3500000,
       "roomImage": "https://example.com/premium-room.jpg",
       "Area": 20,
       "propertyId": 2,
-      "totalRooms": 4
+      "totalRooms": 8
+    },
+    {
+      "typeName": "Standard Plus",
+      "price": 2500000,
+      "roomImage": "https://example.com/standard-plus-room.jpg",
+      "Area": 15,
+      "propertyId": 3,
+      "totalRooms": 12
     }
   ],
   "individualrooms": [
     {
-      "roomNumber": "101",
+      "roomNumber": "A-101",
       "status": "Occupied",
       "roomId": 1
     },
     {
-      "roomNumber": "102",
+      "roomNumber": "A-102",
       "status": "Occupied",
       "roomId": 1
     },
     {
-      "roomNumber": "201",
+      "roomNumber": "B-201",
       "status": "Occupied",
       "roomId": 2
+    },
+    {
+      "roomNumber": "C-301",
+      "status": "Occupied",
+      "roomId": 3
     }
   ],
   "renters": [
     {
       "userId": 2,
-      "renterName": "Alice Renter",
+      "renterName": "Alice Johnson",
       "renterEmail": "alice@example.com",
       "renterPhone": "081234567890",
       "ktpNumber": "1234567890123456",
@@ -79,18 +98,18 @@
       "roomId": 1,
       "individualRoomId": 1,
       "propertyId": 1,
-      "joinDate": "2024-01-01T00:00:00.000Z",
-      "leaveDate": "2025-01-01T00:00:00.000Z",
+      "joinDate": "2024-02-01T00:00:00.000Z",
+      "leaveDate": "2025-02-01T00:00:00.000Z",
       "hasLeaved": false
     },
     {
       "userId": 2,
-      "renterName": "Bob Renter",
+      "renterName": "Bob Smith",
       "renterEmail": "bob@example.com",
       "renterPhone": "081234567891",
       "ktpNumber": "1234567890123457",
-      "depositAmount": 2300000,
-      "roomId": 1,
+      "depositAmount": 2800000,
+      "roomId": 2,
       "individualRoomId": 2,
       "propertyId": 1,
       "joinDate": "2024-01-15T00:00:00.000Z",
@@ -99,74 +118,250 @@
     },
     {
       "userId": 2,
-      "renterName": "Charlie Renter",
+      "renterName": "Charlie Brown",
       "renterEmail": "charlie@example.com",
       "renterPhone": "081234567892",
       "ktpNumber": "1234567890123458",
-      "depositAmount": 2500000,
-      "roomId": 2,
+      "depositAmount": 3500000,
+      "roomId": 3,
       "individualRoomId": 3,
-      "propertyId": 1,
-      "joinDate": "2023-12-01T00:00:00.000Z",
-      "leaveDate": "2024-12-01T00:00:00.000Z",
+      "propertyId": 2,
+      "joinDate": "2023-01-01T00:00:00.000Z",
+      "leaveDate": "2024-01-01T00:00:00.000Z",
+      "hasLeaved": false
+    },
+    {
+      "userId": 2,
+      "renterName": "Diana Prince",
+      "renterEmail": "diana@example.com",
+      "renterPhone": "081234567893",
+      "ktpNumber": "1234567890123459",
+      "depositAmount": 2500000,
+      "roomId": 4,
+      "individualRoomId": 4,
+      "propertyId": 3,
+      "joinDate": "2023-09-01T00:00:00.000Z",
+      "leaveDate": "2024-09-01T00:00:00.000Z",
       "hasLeaved": false
     }
   ],
   "renterexpenses": [
     {
       "renterId": 1,
-      "maintenanceType": "Utilities",
-      "serviceDate": "2024-01-15T00:00:00.000Z",
-      "serviceDescription": "Monthly electricity bill",
+      "maintenanceType": "UTILITIES",
+      "serviceDate": "2025-02-05T00:00:00.000Z",
+      "serviceDescription": "Electricity bill",
       "servicePrice": 500000,
-      "serviceInvoice": "https://example.com/invoice1.pdf",
-      "lastPaymentDate": "2024-01-20T00:00:00.000Z"
+      "serviceInvoice": "invoice1.pdf",
+      "lastPaymentDate": "2025-02-10T00:00:00.000Z"
     },
     {
       "renterId": 2,
-      "maintenanceType": "Repair",
-      "serviceDate": "2024-01-16T00:00:00.000Z",
-      "serviceDescription": "AC maintenance",
+      "maintenanceType": "MAINTENANCE",
+      "serviceDate": "2025-01-15T00:00:00.000Z",
+      "serviceDescription": "AC repair",
+      "servicePrice": 750000,
+      "serviceInvoice": "invoice2.pdf",
+      "lastPaymentDate": "2025-01-20T00:00:00.000Z"
+    },
+    {
+      "renterId": 1,
+      "maintenanceType": "UTILITIES",
+      "serviceDate": "2024-12-05T00:00:00.000Z",
+      "serviceDescription": "Water bill",
       "servicePrice": 300000,
-      "serviceInvoice": "https://example.com/invoice2.pdf",
-      "lastPaymentDate": "2024-01-25T00:00:00.000Z"
+      "serviceInvoice": "invoice3.pdf",
+      "lastPaymentDate": "2024-12-10T00:00:00.000Z"
+    },
+    {
+      "renterId": 2,
+      "maintenanceType": "MAINTENANCE",
+      "serviceDate": "2024-11-20T00:00:00.000Z",
+      "serviceDescription": "Plumbing repair",
+      "servicePrice": 450000,
+      "serviceInvoice": "invoice4.pdf",
+      "lastPaymentDate": "2024-11-25T00:00:00.000Z"
     }
   ],
   "rentertransactions": [
     {
       "renterId": 1,
-      "orderId": "TRX-001",
+      "orderId": "TRX-2025-02-01",
       "paymentStatus": true,
       "amount": 2300000,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "dueDate": "2024-01-03T00:00:00.000Z",
-      "paidAt": "2024-01-02T00:00:00.000Z",
+      "createdAt": "2025-02-01T00:00:00.000Z",
+      "dueDate": "2025-02-03T00:00:00.000Z",
+      "paidAt": "2025-02-01T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 2,
+      "year": 2025
+    },
+    {
+      "renterId": 2,
+      "orderId": "TRX-2025-02-01",
+      "paymentStatus": true,
+      "amount": 2800000,
+      "createdAt": "2025-02-01T00:00:00.000Z",
+      "dueDate": "2025-02-03T00:00:00.000Z",
+      "paidAt": "2025-02-02T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 2,
+      "year": 2025
+    },
+    {
+      "renterId": 1,
+      "orderId": "TRX-2025-01-01",
+      "paymentStatus": true,
+      "amount": 2300000,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "dueDate": "2025-01-03T00:00:00.000Z",
+      "paidAt": "2025-01-01T00:00:00.000Z",
       "isOverdue": false,
       "month": 1,
+      "year": 2025
+    },
+    {
+      "renterId": 2,
+      "orderId": "TRX-2025-01-01",
+      "paymentStatus": true,
+      "amount": 2800000,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "dueDate": "2025-01-03T00:00:00.000Z",
+      "paidAt": "2025-01-02T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 1,
+      "year": 2025
+    },
+    {
+      "renterId": 1,
+      "orderId": "TRX-2024-12-01",
+      "paymentStatus": true,
+      "amount": 2300000,
+      "createdAt": "2024-12-01T00:00:00.000Z",
+      "dueDate": "2024-12-03T00:00:00.000Z",
+      "paidAt": "2024-12-01T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 12,
       "year": 2024
     },
     {
       "renterId": 2,
-      "orderId": "TRX-002",
-      "paymentStatus": false,
-      "amount": 2300000,
-      "createdAt": "2024-01-15T00:00:00.000Z",
-      "dueDate": "2024-01-18T00:00:00.000Z",
-      "paidAt": null,
-      "isOverdue": true,
-      "month": 1,
+      "orderId": "TRX-2024-12-01",
+      "paymentStatus": true,
+      "amount": 2800000,
+      "createdAt": "2024-12-01T00:00:00.000Z",
+      "dueDate": "2024-12-03T00:00:00.000Z",
+      "paidAt": "2024-12-02T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 12,
       "year": 2024
     },
     {
       "renterId": 3,
-      "orderId": "TRX-003",
+      "orderId": "TRX-2024-11-01",
+      "paymentStatus": true,
+      "amount": 3500000,
+      "createdAt": "2024-11-01T00:00:00.000Z",
+      "dueDate": "2024-11-05T00:00:00.000Z",
+      "paidAt": "2024-11-03T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 11,
+      "year": 2024
+    },
+    {
+      "renterId": 4,
+      "orderId": "TRX-2024-10-01",
       "paymentStatus": true,
       "amount": 2500000,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "dueDate": "2024-01-03T00:00:00.000Z",
-      "paidAt": "2024-01-01T00:00:00.000Z",
+      "createdAt": "2024-10-01T00:00:00.000Z",
+      "dueDate": "2024-10-03T00:00:00.000Z",
+      "paidAt": "2024-10-01T00:00:00.000Z",
       "isOverdue": false,
-      "month": 1,
+      "month": 10,
+      "year": 2024
+    },
+    {
+      "renterId": 1,
+      "orderId": "TRX-2024-09-01",
+      "paymentStatus": true,
+      "amount": 2300000,
+      "createdAt": "2024-09-01T00:00:00.000Z",
+      "dueDate": "2024-09-03T00:00:00.000Z",
+      "paidAt": "2024-09-02T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 9,
+      "year": 2024
+    },
+    {
+      "renterId": 2,
+      "orderId": "TRX-2024-08-01",
+      "paymentStatus": true,
+      "amount": 2800000,
+      "createdAt": "2024-08-01T00:00:00.000Z",
+      "dueDate": "2024-08-03T00:00:00.000Z",
+      "paidAt": "2024-08-01T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 8,
+      "year": 2024
+    },
+    {
+      "renterId": 4,
+      "orderId": "TRX-2024-07-01",
+      "paymentStatus": true,
+      "amount": 2500000,
+      "createdAt": "2024-07-01T00:00:00.000Z",
+      "dueDate": "2024-07-05T00:00:00.000Z",
+      "paidAt": "2024-07-03T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 7,
+      "year": 2024
+    },
+    {
+      "renterId": 1,
+      "orderId": "TRX-2024-06-01",
+      "paymentStatus": true,
+      "amount": 2300000,
+      "createdAt": "2024-06-01T00:00:00.000Z",
+      "dueDate": "2024-06-03T00:00:00.000Z",
+      "paidAt": "2024-06-02T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 6,
+      "year": 2024
+    },
+    {
+      "renterId": 2,
+      "orderId": "TRX-2024-05-01",
+      "paymentStatus": true,
+      "amount": 2800000,
+      "createdAt": "2024-05-01T00:00:00.000Z",
+      "dueDate": "2024-05-03T00:00:00.000Z",
+      "paidAt": "2024-05-01T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 5,
+      "year": 2024
+    },
+    {
+      "renterId": 3,
+      "orderId": "TRX-2024-04-01",
+      "paymentStatus": true,
+      "amount": 3500000,
+      "createdAt": "2024-04-01T00:00:00.000Z",
+      "dueDate": "2024-04-03T00:00:00.000Z",
+      "paidAt": "2024-04-01T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 4,
+      "year": 2024
+    },
+    {
+      "renterId": 4,
+      "orderId": "TRX-2024-03-01",
+      "paymentStatus": true,
+      "amount": 2500000,
+      "createdAt": "2024-03-01T00:00:00.000Z",
+      "dueDate": "2024-03-05T00:00:00.000Z",
+      "paidAt": "2024-03-03T00:00:00.000Z",
+      "isOverdue": false,
+      "month": 3,
       "year": 2024
     }
   ]

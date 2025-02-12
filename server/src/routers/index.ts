@@ -4,11 +4,14 @@ import llmController from '../controllers/llmController';
 import { authentication } from '../middlewares/authentication';
 import errorHandler from '../middlewares/errorHandler';
 import authRoutes from './auth';
+import dashboardRoutes from './dashboard';
 import llmRoutes from './llm';
 import paymentRoutes from './payment';
 import propertyRoutes from './property';
 import renterRoutes from './renter';
 import roomRoutes from './room';
+import subscriptionRoutes from './subscription';
+import userRoutes from './user';
 
 const router = Router();
 
@@ -18,11 +21,14 @@ router.post('/llm', llmController.getResponsePublic);
 
 // Protected routes
 router.use(authentication);
+router.use('/dashboard', dashboardRoutes);
 router.use('/properties', propertyRoutes);
 router.use('/renters', renterRoutes);
 router.use('/payments', paymentRoutes);
-router.use('/llm', llmRoutes);
 router.use('/rooms', roomRoutes);
+router.use('/subscription', subscriptionRoutes);
+router.use('/users', userRoutes);
+router.use('/llm', llmRoutes);
 
 router.use(errorHandler);
 

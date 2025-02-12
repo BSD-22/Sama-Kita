@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import propertyController from '../controllers/propertyController';
 import { upload } from '../helpers/multer';
 
