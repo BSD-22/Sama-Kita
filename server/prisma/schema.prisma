@@ -19,6 +19,11 @@ enum SubscriptionTier {
   PREMIUM
 }
 
+enum OperationalExpenseType {
+  PREPAID    // User pays all expenses upfront
+  POSTPAID   // Renter pays monthly
+}
+
 model User {
   id          Int           @id @default(autoincrement())
   email       String        @unique
@@ -49,6 +54,7 @@ model Property {
   Operator          Operator[]
   Renter            Renter[]
   Room              Room[]
+  operationalSettings OperationalSettings?
 }
 
 model Operator {
@@ -83,17 +89,43 @@ model IndividualRoom {
   renters           Renter[]
 }
 
+model OperationalSettings {
+  id                Int                   @id @default(autoincrement())
+  propertyId        Int                   @unique
+  property          Property              @relation(fields: [propertyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  electricityType   OperationalExpenseType @default(POSTPAID)
+  waterType         OperationalExpenseType @default(POSTPAID)
+  internetType      OperationalExpenseType @default(POSTPAID)
+  electricityDueDay Int                   @default(1)  // Day of month when payment is due
+  waterDueDay      Int                   @default(1)
+  internetDueDay   Int                   @default(1)
+  // For PREPAID types, store the duration
+  electricityDuration Int?                // in months (1, 6, or 12)
+  waterDuration      Int?                // in months
+  internetDuration   Int?                // in months
+  // Fixed monthly costs for POSTPAID
+  electricityCost   Int?
+  waterCost         Int?
+  internetCost      Int?
+}
+
 model RenterExpenses {
   id                  Int             @id @default(autoincrement())
   renterId            Int             
   renter              Renter          @relation(fields: [renterId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  maintenanceType     String
-  maintenanceCategory String 
+  maintenanceType     String          // 'OPERATIONAL' or 'MAINTENANCE'
+  maintenanceCategory String          // 'Electricity', 'Water', 'Internet', 'Air Conditioning', etc.
   serviceDate         DateTime
   serviceDescription  String?
   servicePrice        Int
   serviceInvoice      String
   lastPaymentDate     DateTime
+  isPrepaid           Boolean         @default(false)  // To distinguish between prepaid and postpaid expenses
+  durationMonths      Int?            // For prepaid expenses, how many months it covers
+  startDate           DateTime?       // For prepaid expenses, when the coverage starts
+  endDate             DateTime?       // For prepaid expenses, when the coverage ends
+  dueDate             DateTime?       // When the payment is due
+  isOverdue           Boolean         @default(false)
 }
 
 model Renter {

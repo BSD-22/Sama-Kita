@@ -4,11 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { baseUrl } from "@/constants/baseUrl";
@@ -22,9 +17,11 @@ export default function AddPropertyPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [propertyName, setPropertyName] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState<number | null>(null);
   const [propertyImage, setPropertyImage] = useState<File | null>(null);
-  const [date, setDate] = useState<Date>();
+
+  console.log(dueDate, "dueDate");
+  
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -46,7 +43,7 @@ export default function AddPropertyPage() {
       return;
     }
 
-    if (!dueDate) {
+    if (dueDate === null) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -69,7 +66,7 @@ export default function AddPropertyPage() {
     try {
       const formData = new FormData();
       formData.append("propertyName", propertyName.trim());
-      formData.append("dueDate", dueDate);
+      formData.append("dueDate", dueDate.toString());
       formData.append("propertyImage", propertyImage);
 
       await axios.post(baseUrl + "/properties", formData, {
@@ -128,31 +125,18 @@ export default function AddPropertyPage() {
               <Label
                 htmlFor="dueDate"
                 className="text-sm md:text-base">
-                Due Date
+                Due Date (in days)
               </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn("w-full justify-start text-left font-normal text-sm md:text-base", !date && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(newDate) => {
-                      setDate(newDate);
-                      if (newDate) {
-                        setDueDate(format(newDate, "yyyy-MM-dd"));
-                      }
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <Input
+                id="dueDate"
+                type="number"
+                min="1"
+                placeholder="Enter number of days"
+                value={dueDate || ''}
+                onChange={(e) => setDueDate(parseInt(e.target.value) || null)}
+                required
+                className="w-full"
+              />
             </div>
 
             <div className="space-y-2">

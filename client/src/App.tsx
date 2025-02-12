@@ -22,7 +22,7 @@ import AddGeneralRoomPage from "./views/AddGeneralRoomPage";
 import RenterDetailPage from "./views/RenterDetailPage";
 import SubscriptionPage from "./views/SubscriptionPage";
 import SubscriptionManagementPage from "./views/SubscriptionManagementPage";
-import { SubscriptionProvider } from './contexts/SubscriptionContext';
+import OperationalSettingsPage from "./views/OperationalSettingsPage";
 
 export default function App() {
   return (
@@ -78,14 +78,18 @@ export default function App() {
               path="/properties/:propertyId/edit/:roomId"
               element={<EditRoomPage />}
             />
-          <Route
-            path="/expenses/maintenance/operational"
-            element={<MaintenancePage />}
-          />
-          <Route
-            path="/expenses/maintenance/non-operational"
-            element={<MaintenancePage />}
-          />
+            <Route
+              path="/operational-settings"
+              element={<OperationalSettingsPage />}
+            />
+            <Route
+              path="/expenses/maintenance/operational"
+              element={<MaintenancePage />}
+            />
+            <Route
+              path="/expenses/maintenance/non-operational"
+              element={<MaintenancePage />}
+            />
             <Route
               path="/expenses/add"
               element={<AddRenterExpenses />}
