@@ -25,13 +25,26 @@ export default function RentersPage() {
   const dispatch = useAppDispatch();
   const { renters, isLoading } = useAppSelector((state) => state.renters);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  // Handle debounce search
+  useEffect(() => {
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setIsSearching(false);
+    }, 500); // delay 500ms
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     dispatch(fetchRenters());
   }, [dispatch]);
 
   const filteredRenters = renters.filter((renter: Renter) =>
-    renter.renterName.toLowerCase().includes(searchQuery.toLowerCase())
+    renter.renterName.toLowerCase().includes(debouncedQuery.toLowerCase())
   );
 
   if (isLoading) {
@@ -101,7 +114,7 @@ export default function RentersPage() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Search renter..."
+            placeholder="Cari penyewa..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all pr-10"
@@ -111,54 +124,66 @@ export default function RentersPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRenters.map((renter: Renter) => (
-            <Card key={renter.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle>{renter.renterName}</CardTitle>
-                  <Badge variant={renter.hasLeaved ? "destructive" : "secondary"}>{renter.hasLeaved ? "Left" : "Active"}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Phone className="w-4 h-4 mr-2" />
-                      {renter.renterPhone}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Mail className="w-4 h-4 mr-2" />
-                      {renter.renterEmail}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      Joined: {format(new Date(renter.joinDate), "PP")}
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t">
-                    <p className="text-sm text-gray-500">Room: {renter.individualRoom?.roomNumber}</p>
-                    <p className="text-sm text-gray-500">Property: {renter.property?.propertyName}</p>
-                  </div>
-
-                  <Link to={`/renters/${renter.id}`}>
-                    <Button
-                      variant="outline"
-                      className="w-full">
-                      View Details
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredRenters.length === 0 && (
-          <div className="text-center py-10">
-            <p className="text-gray-500">Tidak ada penyewa yg ditemukan 😢</p>
+        {isSearching ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="flex space-x-3">
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_infinite]"></span>
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_0.2s_infinite]"></span>
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_0.4s_infinite]"></span>
+            </div>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredRenters.map((renter: Renter) => (
+                <Card key={renter.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{renter.renterName}</CardTitle>
+                      <Badge variant={renter.hasLeaved ? "destructive" : "secondary"}>{renter.hasLeaved ? "Left" : "Active"}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Phone className="w-4 h-4 mr-2" />
+                          {renter.renterPhone}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Mail className="w-4 h-4 mr-2" />
+                          {renter.renterEmail}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Calendar className="w-4 h-4 mr-2" />
+                          Joined: {format(new Date(renter.joinDate), "PP")}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t">
+                        <p className="text-sm text-gray-500">Room: {renter.individualRoom?.roomNumber}</p>
+                        <p className="text-sm text-gray-500">Property: {renter.property?.propertyName}</p>
+                      </div>
+
+                      <Link to={`/renters/${renter.id}`}>
+                        <Button
+                          variant="outline"
+                          className="w-full">
+                          View Details
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {filteredRenters.length === 0 && (
+              <div className="text-center py-10">
+                <p className="text-gray-500">Tidak ada penyewa yg ditemukan 😢</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </motion.div>

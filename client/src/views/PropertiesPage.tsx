@@ -18,13 +18,25 @@ export default function PropertiesPage() {
   const dispatch = useAppDispatch();
   const { properties, isLoading } = useAppSelector((state) => state.properties);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setIsSearching(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     dispatch(fetchProperties());
   }, [dispatch]);
 
   const filteredProperties = properties.filter((property: Property) =>
-    property.propertyName.toLowerCase().includes(searchQuery.toLowerCase())
+    property.propertyName.toLowerCase().includes(debouncedQuery.toLowerCase())
   );
 
   if (isLoading) {
@@ -81,7 +93,7 @@ export default function PropertiesPage() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Search property..."
+            placeholder="Cari properti..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all pr-10"
@@ -91,37 +103,49 @@ export default function PropertiesPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProperties.map((property: Property) => (
-            <Card key={property.id}>
-              <CardHeader>
-                <CardTitle>{property.propertyName}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500">Due Date: {property.dueDate}</p>
-                  <img
-                    src={property.propertyImage}
-                    alt={property.propertyName}
-                    className="w-full h-48 object-cover rounded-md"
-                  />
-                  <Link to={`/property/${property.id}`}>
-                    <Button
-                      variant="outline"
-                      className="w-full">
-                      View Details
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredProperties.length === 0 && (
-          <div className="text-center py-10">
-            <p className="text-gray-500">Tidak ada properti yg ditemukan 😢</p>
+        {isSearching ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="flex space-x-3">
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_infinite]"></span>
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_0.2s_infinite]"></span>
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_0.4s_infinite]"></span>
+            </div>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProperties.map((property: Property) => (
+                <Card key={property.id}>
+                  <CardHeader>
+                    <CardTitle>{property.propertyName}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-500">Due Date: {property.dueDate}</p>
+                      <img
+                        src={property.propertyImage}
+                        alt={property.propertyName}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                      <Link to={`/property/${property.id}`}>
+                        <Button
+                          variant="outline"
+                          className="w-full">
+                          View Details
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {filteredProperties.length === 0 && (
+              <div className="text-center py-10">
+                <p className="text-gray-500">Tidak ada properti yg ditemukan 😢</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </motion.div>

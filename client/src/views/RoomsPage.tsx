@@ -30,13 +30,25 @@ export default function RoomsPage() {
   const dispatch = useAppDispatch();
   const { rooms, isLoading } = useAppSelector((state) => state.rooms);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setIsSearching(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     dispatch(fetchRooms());
   }, [dispatch]);
 
   const filteredRooms = rooms.filter((room: Room) =>
-    room.typeName.toLowerCase().includes(searchQuery.toLowerCase())
+    room.typeName.toLowerCase().includes(debouncedQuery.toLowerCase())
   );
 
   // Add loading skeleton
@@ -90,7 +102,7 @@ export default function RoomsPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-8"
+      className="container mx-auto py-8"
     >
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -106,7 +118,7 @@ export default function RoomsPage() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Search room..."
+            placeholder="Cari kamar..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all pr-10"
@@ -116,45 +128,57 @@ export default function RoomsPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRooms.map((room: Room) => (
-            <Card key={room.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle>{room.typeName}</CardTitle>
-                  <Badge variant={room.status === "Available" ? "secondary" : "destructive"}>{room.status}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <img
-                    src={room.roomImage || "/placeholder-room.jpg"}
-                    alt={room.typeName}
-                    className="w-full h-48 object-cover rounded-md"
-                  />
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <p className="text-gray-500">Price: Rp.{room.price.toLocaleString()}</p>
-                    <p className="text-gray-500">Area: {room.Area}m²</p>
-                    <p className="text-gray-500">Total Rooms: {room.totalRooms}</p>
-                    <p className="text-gray-500">Available: {room.individualRooms?.filter((r: IndividualRoom) => r.status === "Available").length || 0}</p>
-                  </div>
-                  <Link to={`/property/${room.propertyId}/edit/${room.id}`}>
-                    <Button
-                      variant="outline"
-                      className="w-full">
-                      Manage Room
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredRooms.length === 0 && (
-          <div className="text-center py-10">
-            <p className="text-gray-500">Tidak ada kamar yg ditemukan 😢</p>
+        {isSearching ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="flex space-x-3">
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_infinite]"></span>
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_0.2s_infinite]"></span>
+              <span className="w-5 h-5 bg-gray-400 rounded-full animate-[loadingDot_1s_ease-in-out_0.4s_infinite]"></span>
+            </div>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredRooms.map((room: Room) => (
+                <Card key={room.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{room.typeName}</CardTitle>
+                      <Badge variant={room.status === "Available" ? "secondary" : "destructive"}>{room.status}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <img
+                        src={room.roomImage || "/placeholder-room.jpg"}
+                        alt={room.typeName}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <p className="text-gray-500">Price: Rp.{room.price.toLocaleString()}</p>
+                        <p className="text-gray-500">Area: {room.Area}m²</p>
+                        <p className="text-gray-500">Total Rooms: {room.totalRooms}</p>
+                        <p className="text-gray-500">Available: {room.individualRooms?.filter((r: IndividualRoom) => r.status === "Available").length || 0}</p>
+                      </div>
+                      <Link to={`/property/${room.propertyId}/edit/${room.id}`}>
+                        <Button
+                          variant="outline"
+                          className="w-full">
+                          Manage Room
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {filteredRooms.length === 0 && (
+              <div className="text-center py-10">
+                <p className="text-gray-500">Tidak ada kamar yg ditemukan 😢</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </motion.div>
