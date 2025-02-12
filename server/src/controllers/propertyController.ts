@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
+
 import { PrismaClient } from '@prisma/client';
+
 import { imagekit } from '../helpers/imagekit';
 
 const prisma = new PrismaClient();
@@ -364,7 +366,7 @@ export default class propertyController {
       const property = await prisma.property.create({
         data: {
           propertyName,
-          dueDate,
+          dueDate: Number(dueDate),
           propertyImage: propertyImageUrl,
           userId,
         },

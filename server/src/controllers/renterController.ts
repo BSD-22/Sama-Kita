@@ -30,16 +30,14 @@ export default class renterController {
           property: true,
           RenterExpenses: {
             orderBy: {
-              serviceDate: 'desc'
-            }
+              serviceDate: 'desc',
+            },
           },
           room: true,
           RenterTransaction: true,
           individualRoom: true,
         },
       });
-
-      console.log("Fetched renters data:", JSON.stringify(renters, null, 2));
 
       res.status(200).json(renters);
     } catch (err) {
@@ -95,13 +93,29 @@ export default class renterController {
     next: NextFunction,
   ) {
     try {
-      console.log("Received request body:", req.body);
-      console.log("Received file:", req.file);
+      console.log('Received request body:', req.body);
+      console.log('Received file:', req.file);
 
-      const { renterId, serviceDate, serviceDescription, maintenanceType, maintenanceCategory, servicePrice, lastPaymentDate } = req.body;
+      const {
+        renterId,
+        serviceDate,
+        serviceDescription,
+        maintenanceType,
+        maintenanceCategory,
+        servicePrice,
+        lastPaymentDate,
+      } = req.body;
 
       // Validate required fields
-      if (!renterId || !serviceDate || !serviceDescription || !maintenanceType || !maintenanceCategory || !servicePrice || !lastPaymentDate) {
+      if (
+        !renterId ||
+        !serviceDate ||
+        !serviceDescription ||
+        !maintenanceType ||
+        !maintenanceCategory ||
+        !servicePrice ||
+        !lastPaymentDate
+      ) {
         throw { name: 'ValidationError', message: 'All fields are required' };
       }
 
@@ -118,9 +132,9 @@ export default class renterController {
           fileName: req.file?.originalname,
         });
 
-        const renterExists = await prisma.renter.findUnique({ 
+        const renterExists = await prisma.renter.findUnique({
           where: { id: +renterId },
-          include: { property: true }
+          include: { property: true },
         });
 
         if (!renterExists) {
@@ -145,14 +159,14 @@ export default class renterController {
           },
         });
 
-        console.log("Created renter expense:", renterexpense);
+        console.log('Created renter expense:', renterexpense);
         res.status(201).json(renterexpense);
       } catch (uploadError) {
-        console.error("Error during file upload or database operation:", uploadError);
+        console.error('Error during file upload or database operation:', uploadError);
         throw { name: 'UploadError', message: 'Failed to process file or save expense', details: uploadError };
       }
     } catch (err) {
-      console.error("Error in addRentersExpenses:", err);
+      console.error('Error in addRentersExpenses:', err);
       next(err);
     }
   }

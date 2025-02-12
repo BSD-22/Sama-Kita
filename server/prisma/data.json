@@ -1,0 +1,104 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@mail.com",
+      "password": "admin123",
+      "name": "Admin"
+    }
+  ],
+  "properties": [
+    {
+      "id": 1,
+      "propertyName": "Apartment A",
+      "dueDate": 10,
+      "userId": 1,
+      "propertyImage": "property1.jpg"
+    }
+  ],
+  "rooms": [
+    {
+      "id": 1,
+      "typeName": "Studio",
+      "price": 2000000,
+      "propertyId": 1,
+      "totalRooms": 10,
+      "area": 25
+    }
+  ],
+  "renters": [
+    {
+      "id": 1,
+      "userId": 1,
+      "renterName": "John Doe",
+      "renterEmail": "john@mail.com",
+      "renterPhone": "081234567890",
+      "ktpNumber": "1234567890",
+      "joinDate": "2024-01-01T00:00:00Z",
+      "leaveDate": "2025-01-01T00:00:00Z",
+      "hasLeaved": false,
+      "roomId": 1,
+      "individualRoomId": 1,
+      "propertyId": 1,
+      "depositAmount": 2000000
+    }
+  ],
+  "operationalSettings": [
+    {
+      "propertyId": 1,
+      "electricityType": "POSTPAID",
+      "waterType": "PREPAID",
+      "internetType": "POSTPAID",
+      "electricityCost": 150000,
+      "waterCost": 100000,
+      "internetCost": 200000,
+      "electricityDueDay": 15,
+      "waterDueDay": 10,
+      "internetDueDay": 20
+    }
+  ],
+  "renterExpenses": [
+    {
+      "id": 1,
+      "renterId": 1,
+      "maintenanceType": "OPERATIONAL",
+      "maintenanceCategory": "Electricity",
+      "serviceDate": "2024-03-01T00:00:00Z",
+      "serviceDescription": "Monthly electricity payment",
+      "servicePrice": 150000,
+      "serviceInvoice": "auto-generated",
+      "lastPaymentDate": "2024-03-01T00:00:00Z",
+      "isPrepaid": false,
+      "dueDate": "2024-03-15T00:00:00Z",
+      "isOverdue": false
+    },
+    {
+      "id": 2,
+      "renterId": 1,
+      "maintenanceType": "OPERATIONAL",
+      "maintenanceCategory": "Water",
+      "serviceDate": "2024-03-01T00:00:00Z",
+      "serviceDescription": "Monthly water payment (Owner Pays)",
+      "servicePrice": 100000,
+      "serviceInvoice": "auto-generated",
+      "lastPaymentDate": "2024-03-01T00:00:00Z",
+      "isPrepaid": true,
+      "dueDate": "2024-03-10T00:00:00Z",
+      "isOverdue": false
+    },
+    {
+      "id": 3,
+      "renterId": 1,
+      "maintenanceType": "OPERATIONAL",
+      "maintenanceCategory": "Internet",
+      "serviceDate": "2024-03-01T00:00:00Z",
+      "serviceDescription": "Monthly internet payment",
+      "servicePrice": 200000,
+      "serviceInvoice": "auto-generated",
+      "lastPaymentDate": "2024-03-01T00:00:00Z",
+      "isPrepaid": false,
+      "dueDate": "2024-03-20T00:00:00Z",
+      "isOverdue": false
+    }
+  ]
+}
