@@ -11,11 +11,38 @@ export default class OperationalSettingsController {
   static async getSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { propertyId } = req.params;
-      const settings = await prisma.operationalSettings.findUnique({
+      console.log('=== GET SETTINGS REQUEST ===');
+      console.log('Property ID:', propertyId);
+
+      let settings = await prisma.operationalSettings.findUnique({
         where: { propertyId: +propertyId },
       });
+
+      console.log('=== FOUND SETTINGS ===', settings);
+
+      // If no settings exist, create default settings
+      if (!settings) {
+        console.log('=== CREATING DEFAULT SETTINGS ===');
+        settings = await prisma.operationalSettings.create({
+          data: {
+            propertyId: +propertyId,
+            electricityType: 'POSTPAID',
+            waterType: 'POSTPAID',
+            internetType: 'POSTPAID',
+            electricityCost: 0,
+            waterCost: 0,
+            internetCost: 0,
+            electricityDueDay: 1,
+            waterDueDay: 1,
+            internetDueDay: 1,
+          },
+        });
+        console.log('=== CREATED DEFAULT SETTINGS ===', settings);
+      }
+
       res.json(settings);
     } catch (err) {
+      console.error('=== ERROR IN GET SETTINGS ===', err);
       next(err);
     }
   }
@@ -24,48 +51,76 @@ export default class OperationalSettingsController {
     try {
       const { propertyId } = req.params;
       const settings = req.body;
+      console.log('Received settings:', settings);
 
-      // Validate settings
-      for (const utility of ['electricity', 'water', 'internet']) {
-        const { type, cost, dueDay } = settings[utility];
-        if (!type || !cost || !dueDay) {
-          throw { name: 'ValidationError', message: `Missing required fields for ${utility}` };
+      // Validate the flattened settings format
+      const requiredFields = [
+        'electricityType', 'waterType', 'internetType',
+        'electricityCost', 'waterCost', 'internetCost',
+        'electricityDueDay', 'waterDueDay', 'internetDueDay'
+      ];
+
+      for (const field of requiredFields) {
+        if (settings[field] === undefined) {
+          throw { 
+            name: 'ValidationError', 
+            message: `Missing required field: ${field}` 
+          };
         }
+      }
+
+      // Validate due days
+      const dueDayFields = ['electricityDueDay', 'waterDueDay', 'internetDueDay'];
+      for (const field of dueDayFields) {
+        const dueDay = settings[field];
         if (dueDay < 1 || dueDay > 28) {
-          throw { name: 'ValidationError', message: `Due day must be between 1 and 28` };
+          throw { 
+            name: 'ValidationError', 
+            message: `${field} must be between 1 and 28, got ${dueDay}` 
+          };
         }
       }
 
       const updatedSettings = await prisma.operationalSettings.upsert({
         where: { propertyId: +propertyId },
         update: {
-          electricityType: settings.electricity.type,
-          waterType: settings.water.type,
-          internetType: settings.internet.type,
-          electricityCost: settings.electricity.cost,
-          waterCost: settings.water.cost,
-          internetCost: settings.internet.cost,
-          electricityDueDay: settings.electricity.dueDay,
-          waterDueDay: settings.water.dueDay,
-          internetDueDay: settings.internet.dueDay,
+          electricityType: settings.electricityType,
+          waterType: settings.waterType,
+          internetType: settings.internetType,
+          electricityCost: settings.electricityCost,
+          waterCost: settings.waterCost,
+          internetCost: settings.internetCost,
+          electricityDueDay: settings.electricityDueDay,
+          waterDueDay: settings.waterDueDay,
+          internetDueDay: settings.internetDueDay,
         },
         create: {
           propertyId: +propertyId,
-          electricityType: settings.electricity.type,
-          waterType: settings.water.type,
-          internetType: settings.internet.type,
-          electricityCost: settings.electricity.cost,
-          waterCost: settings.water.cost,
-          internetCost: settings.internet.cost,
-          electricityDueDay: settings.electricity.dueDay,
-          waterDueDay: settings.water.dueDay,
-          internetDueDay: settings.internet.dueDay,
+          electricityType: settings.electricityType,
+          waterType: settings.waterType,
+          internetType: settings.internetType,
+          electricityCost: settings.electricityCost,
+          waterCost: settings.waterCost,
+          internetCost: settings.internetCost,
+          electricityDueDay: settings.electricityDueDay,
+          waterDueDay: settings.waterDueDay,
+          internetDueDay: settings.internetDueDay,
         },
       });
 
+      console.log('Updated settings:', updatedSettings);
       res.json(updatedSettings);
-    } catch (err) {
-      next(err);
+    } catch (err: unknown) {
+      console.error('Error updating settings:', err);
+      if (err instanceof Error) {
+        if (err.name === 'ValidationError') {
+          res.status(400).json({ error: err.message });
+        } else {
+          next(err);
+        }
+      } else {
+        next(new Error('An unknown error occurred'));
+      }
     }
   }
 

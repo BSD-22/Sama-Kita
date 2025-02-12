@@ -1,20 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { baseUrl } from '@/constants/baseUrl';
+import { useNavigate } from 'react-router';
 
 type OperationalExpenseType = 'PREPAID' | 'POSTPAID';
 
 interface UtilitySetting {
   type: OperationalExpenseType;
-  cost: number;
+  cost: number | null;
   dueDay: number;
 }
 
@@ -40,9 +33,8 @@ interface OperationalSettingsFormProps {
   onSettingsUpdated: () => Promise<void>;
 }
 
-const DUE_DAY_OPTIONS = Array.from({ length: 28 }, (_, i) => i + 1);
-
 export default function OperationalSettingsForm({ propertyId, initialSettings, onSettingsUpdated }: OperationalSettingsFormProps) {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<Settings>({
     electricity: { type: 'POSTPAID', cost: 0, dueDay: 1 },
     water: { type: 'POSTPAID', cost: 0, dueDay: 1 },
@@ -50,125 +42,141 @@ export default function OperationalSettingsForm({ propertyId, initialSettings, o
   });
 
   useEffect(() => {
+    console.log('Initial settings:', initialSettings);
     if (initialSettings) {
       setSettings({
         electricity: {
-          type: initialSettings.electricityType || 'POSTPAID',
-          cost: initialSettings.electricityCost || 0,
-          dueDay: initialSettings.electricityDueDay || 1,
+          type: initialSettings.electricityType,
+          cost: initialSettings.electricityCost,
+          dueDay: initialSettings.electricityDueDay,
         },
         water: {
-          type: initialSettings.waterType || 'POSTPAID',
-          cost: initialSettings.waterCost || 0,
-          dueDay: initialSettings.waterDueDay || 1,
+          type: initialSettings.waterType,
+          cost: initialSettings.waterCost,
+          dueDay: initialSettings.waterDueDay,
         },
         internet: {
-          type: initialSettings.internetType || 'POSTPAID',
-          cost: initialSettings.internetCost || 0,
-          dueDay: initialSettings.internetDueDay || 1,
+          type: initialSettings.internetType,
+          cost: initialSettings.internetCost,
+          dueDay: initialSettings.internetDueDay,
         },
       });
     }
   }, [initialSettings]);
 
-  const handleTypeChange = (utility: string, type: OperationalExpenseType) => {
-    setSettings((prev: Settings) => ({
-      ...prev,
-      [utility]: { ...prev[utility as keyof typeof prev], type }
-    }));
-  };
-
-  const handleCostChange = (utility: string, cost: number) => {
-    setSettings(prev => ({
-      ...prev,
-      [utility]: { ...prev[utility as keyof typeof prev], cost }
-    }));
-  };
-
-  const handleDueDayChange = (utility: string, dueDay: number) => {
-    setSettings(prev => ({
-      ...prev,
-      [utility]: { ...prev[utility as keyof typeof prev], dueDay: Math.min(Math.max(1, dueDay), 28) }
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log('Submitting settings:', settings);
       const response = await fetch(baseUrl + `/properties/${propertyId}/operational-settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.access_token}`
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({
+          electricityType: settings.electricity.type,
+          waterType: settings.water.type,
+          internetType: settings.internet.type,
+          electricityCost: Number(settings.electricity.cost),
+          waterCost: Number(settings.water.cost),
+          internetCost: Number(settings.internet.cost),
+          electricityDueDay: Number(settings.electricity.dueDay),
+          waterDueDay: Number(settings.water.dueDay),
+          internetDueDay: Number(settings.internet.dueDay),
+        }),
       });
-      if (response.ok) {
-        await onSettingsUpdated();
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update settings');
       }
+
+      console.log('Settings updated successfully:', data);
+      await onSettingsUpdated();
+      navigate(`/expenses/maintenance/operational`);
     } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('Error updating settings:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update settings. Please try again.';
+      alert(errorMessage);
     }
+  };
+
+  const handleTypeChange = (utility: string, type: OperationalExpenseType) => {
+    setSettings(prev => ({
+      ...prev,
+      [utility]: { ...prev[utility as keyof typeof prev], type }
+    }));
+  };
+
+  const handleCostChange = (utility: string, value: string) => {
+    const cost = value === '' ? null : Math.max(0, parseInt(value) || 0);
+    setSettings(prev => ({
+      ...prev,
+      [utility]: { ...prev[utility as keyof typeof prev], cost }
+    }));
+  };
+
+  const handleDueDayChange = (utility: string, value: string) => {
+    const dueDay = Math.min(Math.max(1, parseInt(value) || 1), 28);
+    setSettings(prev => ({
+      ...prev,
+      [utility]: { ...prev[utility as keyof typeof prev], dueDay }
+    }));
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {Object.entries(settings).map(([utility, setting]) => (
-        <div key={utility} className="p-4 border rounded-lg">
-          <h3 className="capitalize text-lg font-medium mb-4">{utility}</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Payment Type</label>
-              <Select 
-                value={setting.type}
-                onValueChange={(value) => handleTypeChange(utility, value as OperationalExpenseType)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select payment type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PREPAID">Owner Pays</SelectItem>
-                  <SelectItem value="POSTPAID">Renter Pays</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {Object.entries(settings).map(([utility, setting]) => (
+          <div key={utility} className="p-4 border rounded-lg">
+            <h3 className="capitalize text-lg font-medium mb-3">{utility}</h3>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium block mb-1">Payment Type</label>
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  value={setting.type}
+                  onChange={(e) => handleTypeChange(utility, e.target.value as OperationalExpenseType)}
+                >
+                  <option value="PREPAID">Owner Pays</option>
+                  <option value="POSTPAID">Renter Pays</option>
+                </select>
+              </div>
 
-            <div>
-              <label className="text-sm font-medium">Monthly Cost</label>
-              <Input
-                type="number"
-                placeholder="Enter monthly cost"
-                value={setting.cost}
-                onChange={(e) => handleCostChange(utility, parseInt(e.target.value))}
-              />
-            </div>
+              <div>
+                <label className="text-sm font-medium block mb-1">Monthly Cost</label>
+                <input
+                  type="number"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  min="0"
+                  value={setting.cost ?? ''}
+                  onChange={(e) => handleCostChange(utility, e.target.value)}
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium">Due Day of Month</label>
-              <Select 
-                value={setting.dueDay?.toString() || "1"}
-                onValueChange={(value) => handleDueDayChange(utility, parseInt(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select due day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DUE_DAY_OPTIONS.map(day => (
-                    <SelectItem key={day} value={day.toString()}>
-                      Day {day}
-                    </SelectItem>
+              <div>
+                <label className="text-sm font-medium block mb-1">Due Day</label>
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  value={setting.dueDay}
+                  onChange={(e) => handleDueDayChange(utility, e.target.value)}
+                >
+                  {Array.from({ length: 28 }, (_, i) => i + 1).map(day => (
+                    <option key={day} value={day}>Day {day}</option>
                   ))}
-                </SelectContent>
-              </Select>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       <div className="flex justify-end">
         <Button type="submit">Save Settings</Button>
       </div>
     </form>
   );
-} 
+}
