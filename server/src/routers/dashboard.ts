@@ -4,6 +4,6 @@ import dashboardController from '../controllers/dashboardController';
 
 const router = Router();
 
-router.get('/graph-performance', dashboardController.getPropertySummary);
+router.get('/performance', dashboardController.getPropertySummary);
 
 export default router;

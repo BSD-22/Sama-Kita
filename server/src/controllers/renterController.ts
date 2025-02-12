@@ -16,6 +16,7 @@ type RenterExpenses = {
   serviceInvoice: string;
   lastPaymentDate: Date;
   maintenanceType: string;
+  maintenanceCategory: string;
 };
 
 export default class renterController {
@@ -27,7 +28,11 @@ export default class renterController {
         },
         include: {
           property: true,
-          RenterExpenses: true,
+          RenterExpenses: {
+            orderBy: {
+              serviceDate: 'desc',
+            },
+          },
           room: true,
           RenterTransaction: true,
           individualRoom: true,
@@ -88,40 +93,80 @@ export default class renterController {
     next: NextFunction,
   ) {
     try {
-      const { renterId, serviceDate, serviceDescription, maintenanceType, servicePrice, lastPaymentDate } = req.body;
+      console.log('Received request body:', req.body);
+      console.log('Received file:', req.file);
 
-      if (!req.file) throw { name: 'NoFileError' };
-      const imgFile = req.file.buffer.toString('base64');
+      const {
+        renterId,
+        serviceDate,
+        serviceDescription,
+        maintenanceType,
+        maintenanceCategory,
+        servicePrice,
+        lastPaymentDate,
+      } = req.body;
 
-      const serviceInvoice = await imagekit
-        .upload({
-          file: imgFile,
-          fileName: req.file?.originalname,
-        })
-        .catch((err) => {
-          throw { name: 'UploadError', message: 'Failed to upload file', details: err };
-        });
-
-      const renterExists = await prisma.renter.findUnique({ where: { id: +renterId } });
-      if (!renterExists) {
-        throw { name: 'NotFoundError' };
+      // Validate required fields
+      if (
+        !renterId ||
+        !serviceDate ||
+        !serviceDescription ||
+        !maintenanceType ||
+        !maintenanceCategory ||
+        !servicePrice ||
+        !lastPaymentDate
+      ) {
+        throw { name: 'ValidationError', message: 'All fields are required' };
       }
 
-      const renterexpense = await prisma.renterExpenses.create({
-        data: {
-          renterId: +renterId,
-          serviceDate: new Date(serviceDate),
-          serviceDescription,
-          maintenanceType,
-          serviceInvoice: serviceInvoice.url,
-          servicePrice: +servicePrice,
-          lastPaymentDate: new Date(lastPaymentDate),
-        },
-      });
+      if (!req.file) {
+        throw { name: 'NoFileError', message: 'Service invoice file is required' };
+      }
 
-      res.status(200).json(renterexpense);
+      // Convert file to base64
+      const imgFile = req.file.buffer.toString('base64');
+
+      try {
+        const serviceInvoice = await imagekit.upload({
+          file: imgFile,
+          fileName: req.file?.originalname,
+        });
+
+        const renterExists = await prisma.renter.findUnique({
+          where: { id: +renterId },
+          include: { property: true },
+        });
+
+        if (!renterExists) {
+          throw { name: 'NotFoundError', message: 'Renter not found' };
+        }
+
+        // Validate that the renter belongs to the specified property
+        if (renterExists.propertyId !== +req.params.propertyId) {
+          throw { name: 'ValidationError', message: 'Renter does not belong to the specified property' };
+        }
+
+        const renterexpense = await prisma.renterExpenses.create({
+          data: {
+            renterId: +renterId,
+            serviceDate: new Date(serviceDate),
+            serviceDescription,
+            maintenanceType,
+            maintenanceCategory,
+            serviceInvoice: serviceInvoice.url,
+            servicePrice: +servicePrice,
+            lastPaymentDate: new Date(lastPaymentDate),
+          },
+        });
+
+        console.log('Created renter expense:', renterexpense);
+        res.status(201).json(renterexpense);
+      } catch (uploadError) {
+        console.error('Error during file upload or database operation:', uploadError);
+        throw { name: 'UploadError', message: 'Failed to process file or save expense', details: uploadError };
+      }
     } catch (err) {
-      console.log(err);
+      console.error('Error in addRentersExpenses:', err);
       next(err);
     }
   }

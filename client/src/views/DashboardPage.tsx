@@ -9,12 +9,12 @@ export default function DashboardPage() {
     {
       title: "View Properties",
       description: "Check your property listings and details",
-      path: "/property",
+      path: "/properties",
     },
     {
       title: "Add Property",
       description: "Register a new property to your portfolio",
-      path: "/property/add",
+      path: "/properties/add",
     },
     {
       title: "Expenses Overview",
@@ -67,7 +67,7 @@ export default function DashboardPage() {
         <Button
           asChild
           variant="default">
-          <Link to="/property/add">Add New Property</Link>
+          <Link to="/properties/add">Add New Property</Link>
         </Button>
         <Button
           asChild

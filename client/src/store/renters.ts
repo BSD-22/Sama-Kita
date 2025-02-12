@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { AppDispatch } from "./store.ts";
 import axios from "axios";
+import { baseUrl } from "@/constants/baseUrl.ts";
 
 // Define a type for the slice state
 interface CounterState<T> {
@@ -39,7 +40,7 @@ export const fetchRenters = () => {
   return async (dispatch: AppDispatch) => {
     try {
       dispatch(setLoading(true));
-      const { data } = await axios.get(`http://localhost:8080/renters`, { headers: { Authorization: `Bearer ${localStorage.access_token}` } });
+      const { data } = await axios.get(baseUrl + `/renters`, { headers: { Authorization: `Bearer ${localStorage.access_token}` } });
 
       dispatch(setRenters(data));
     } catch (error) {

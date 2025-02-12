@@ -39,7 +39,7 @@ export default function AddRoomPage() {
         },
       });
 
-      navigate(`/property/${propertyId}`);
+      navigate(`/properties/${propertyId}`);
     } catch (error) {
       console.log(error);
     }

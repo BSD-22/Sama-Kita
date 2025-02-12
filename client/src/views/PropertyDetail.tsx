@@ -101,7 +101,7 @@ export default function PropertyDetail() {
                 className="relative p-6 border border-gray-300 rounded-lg shadow-md bg-gray-50">
                 <div className="absolute top-4 right-4">
                   <Button
-                    onClick={() => navigate(`/property/${property?.id}/edit/${room.id}`)}
+                    onClick={() => navigate(`/properties/${property?.id}/edit/${room.id}`)}
                     className="px-4 py-2 text-white font-medium rounded-md focus:outline-none shadow-md">
                     Edit
                   </Button>
@@ -170,12 +170,12 @@ export default function PropertyDetail() {
       {/* Buttons */}
       <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-between">
         <Button
-          onClick={() => navigate(`/property/${property?.id}/renters`)}
+          onClick={() => navigate(`/properties/${property?.id}/renters`)}
           className="w-full sm:w-auto">
           See Renter Details
         </Button>
         <Button
-          onClick={() => navigate(`/property/${property?.id}/add`)}
+          onClick={() => navigate(`/properties/${property?.id}/add`)}
           className="w-full sm:w-auto">
           Add More Rooms
         </Button>
