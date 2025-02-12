@@ -9,6 +9,9 @@ import { baseUrl } from "@/constants/baseUrl";
 type Renter = {
   id: number;
   renterName: string;
+  property: {
+    id: number;
+  };
 };
 
 export default function AddRenterExpenses() {
@@ -19,17 +22,21 @@ export default function AddRenterExpenses() {
     renterId: number;
     serviceDate: string;
     maintenanceType: string;
+    maintenanceCategory: string;
     servicePrice: number;
     lastPaymentDate: string;
     invoice: File | null;
+    serviceDescription: string;
   }>({
     propertyId: 0,
     renterId: 0,
     serviceDate: "",
     maintenanceType: "",
+    maintenanceCategory: "",
     servicePrice: 0,
     lastPaymentDate: "",
     invoice: null,
+    serviceDescription: "",
   });
 
   const renters: Renter[] = useAppSelector((state) => state.renters.renters);
@@ -39,7 +46,7 @@ export default function AddRenterExpenses() {
     dispatch(fetchRenters());
   }, []);
 
-  const handleInputChange = (fieldName: string, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (fieldName: string, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const value = e.target.value;
 
     if (fieldName === "invoice") {
@@ -51,7 +58,14 @@ export default function AddRenterExpenses() {
           invoice: file, // Store the File object directly
         }));
       }
-    } else if (fieldName === "propertyId" || fieldName === "renterId" || fieldName === "servicePrice") {
+    } else if (fieldName === "renterId") {
+      const selectedRenter = renters.find(r => r.id === +value);
+      setFormData((prev) => ({
+        ...prev,
+        renterId: +value,
+        propertyId: selectedRenter?.property?.id || 0,
+      }));
+    } else if (fieldName === "propertyId" || fieldName === "servicePrice") {
       setFormData((prev) => ({
         ...prev,
         [fieldName]: +value, // Convert to a number
@@ -68,27 +82,57 @@ export default function AddRenterExpenses() {
     e.preventDefault();
     try {
       const submissionData = new FormData();
-      submissionData.append("propertyId", formData.propertyId.toString());
+      
+      // Make sure propertyId is set from the selected renter
+      const selectedRenter = renters.find(r => r.id === formData.renterId);
+      const propertyId = selectedRenter?.property?.id || 0;
+      
+      // Add the file first
+      if (formData.invoice) {
+        submissionData.append("serviceInvoice", formData.invoice);
+      }
+
+      // Add other form data
       submissionData.append("renterId", formData.renterId.toString());
       submissionData.append("serviceDate", formData.serviceDate);
       submissionData.append("maintenanceType", formData.maintenanceType);
+      submissionData.append("maintenanceCategory", formData.maintenanceCategory);
       submissionData.append("servicePrice", formData.servicePrice.toString());
       submissionData.append("lastPaymentDate", formData.lastPaymentDate);
+      submissionData.append("serviceDescription", formData.serviceDescription);
 
-      if (formData.invoice) {
-        submissionData.append("invoice", formData.invoice); // Append the file
-      }
+      // Log the data being sent
+      console.log("Submitting data:", {
+        propertyId,
+        renterId: formData.renterId,
+        serviceDate: formData.serviceDate,
+        maintenanceType: formData.maintenanceType,
+        maintenanceCategory: formData.maintenanceCategory,
+        servicePrice: formData.servicePrice,
+        lastPaymentDate: formData.lastPaymentDate,
+        serviceDescription: formData.serviceDescription,
+        hasInvoice: !!formData.invoice
+      });
 
-      await axios.post(baseUrl + "/renters", submissionData, {
+      const response = await axios.post(baseUrl + `/renters/expenses/${propertyId}`, submissionData, {
         headers: {
           Authorization: `Bearer ${localStorage.access_token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
-      navigate("/expenses/maintenance");
-    } catch (error) {
-      console.log(error);
+      console.log("Server response:", response.data);
+
+      if (formData.maintenanceCategory === "operational") {
+        navigate("/expenses/maintenance/operational");
+      } else {
+        navigate("/expenses/maintenance/non-operational");
+      }
+    } catch (error: any) {
+      console.error("Error details:", error);
+      if (error.response) {
+        console.error("Server error response:", error.response.data);
+      }
     }
   };
 
@@ -144,7 +188,7 @@ export default function AddRenterExpenses() {
         </div>
 
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Last Payment Date`</label>
+          <label className="block text-gray-700 font-medium mb-2">Last Payment Date:</label>
           <input
             type="date"
             name="lastPaymentDate"
@@ -163,8 +207,23 @@ export default function AddRenterExpenses() {
             value={formData.maintenanceType}
             onChange={(e) => handleInputChange("maintenanceType", e)}
             required
+            placeholder="e.g., repair, service, replacement"
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Maintenance Category:</label>
+          <select
+            name="maintenanceCategory"
+            value={formData.maintenanceCategory}
+            onChange={(e) => handleInputChange("maintenanceCategory", e)}
+            required
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-500">
+            <option value="">Select Category</option>
+            <option value="operational">Operational</option>
+            <option value="non-operational">Non Operational</option>
+          </select>
         </div>
 
         <div>
@@ -178,6 +237,18 @@ export default function AddRenterExpenses() {
             }}
             required
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Service Description:</label>
+          <textarea
+            name="serviceDescription"
+            value={formData.serviceDescription}
+            onChange={(e) => handleInputChange("serviceDescription", e)}
+            required
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-500"
+            rows={4}
           />
         </div>
 

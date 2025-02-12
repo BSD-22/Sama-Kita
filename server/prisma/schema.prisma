@@ -88,6 +88,7 @@ model RenterExpenses {
   renterId            Int             
   renter              Renter          @relation(fields: [renterId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   maintenanceType     String
+  maintenanceCategory String 
   serviceDate         DateTime
   serviceDescription  String?
   servicePrice        Int

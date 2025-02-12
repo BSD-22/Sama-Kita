@@ -78,11 +78,14 @@ export default function App() {
               path="/properties/:propertyId/edit/:roomId"
               element={<EditRoomPage />}
             />
-
-            <Route
-              path="/expenses/maintenance"
-              element={<MaintenancePage />}
-            />
+          <Route
+            path="/expenses/maintenance/operational"
+            element={<MaintenancePage />}
+          />
+          <Route
+            path="/expenses/maintenance/non-operational"
+            element={<MaintenancePage />}
+          />
             <Route
               path="/expenses/add"
               element={<AddRenterExpenses />}

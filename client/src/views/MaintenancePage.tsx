@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hook";
 import { fetchRenters } from "@/store/renters";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 type RenterExpenses = {
   id: number;
@@ -14,6 +14,7 @@ type RenterExpenses = {
   videoService: string;
   lastPaymentDate: Date;
   maintenanceType: string;
+  maintenanceCategory: string;
 };
 
 type Renter = {
@@ -41,15 +42,17 @@ type Room = {
   price: number;
   propertyId: number;
   totalRooms: number;
-  Area: number;
+  area: number;
   typeName: string;
 };
 
 export default function MaintenancePage() {
-  // const [renters, setRenters] = useState<Renter[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const maintenanceCategory = location.pathname.includes('/operational') ? 'operational' : 'non-operational';
 
   const renters: Renter[] = useAppSelector((state) => state.renters.renters);
   const dispatch = useAppDispatch();
@@ -78,7 +81,7 @@ export default function MaintenancePage() {
 
   return (
     <div className="p-4">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-end">
         <Button
           onClick={() => navigate("/expenses/add")}
           className="w-full sm:w-auto">
@@ -88,46 +91,48 @@ export default function MaintenancePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {renters.map((renter) =>
-          renter.RenterExpenses.map((expense) => (
-            <div
-              key={expense.id}
-              className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-semibold text-lg">{renter.property.propertyName}</h3>
-                  <span className="text-sm text-gray-500">{formatDate(expense.serviceDate)}</span>
-                </div>
+          renter.RenterExpenses
+            .filter(expense => expense.maintenanceCategory?.toLowerCase() === maintenanceCategory)
+            .map((expense) => (
+              <div
+                key={expense.id}
+                className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold text-lg">{renter.property.propertyName}</h3>
+                    <span className="text-sm text-gray-500">{formatDate(expense.serviceDate)}</span>
+                  </div>
 
-                <div className="space-y-1">
-                  <p className="text-sm">
-                    <span className="font-medium">Renter:</span> {renter.renterName}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-medium">Room Type:</span> {renter.room.typeName}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-medium">Maintenance:</span> {expense.maintenanceType}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-medium">Price:</span>{" "}
-                    {expense.servicePrice.toLocaleString("id-ID", {
-                      style: "currency",
-                      currency: "IDR",
-                    })}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-medium">Last Payment:</span> {formatDate(expense.lastPaymentDate)}
-                  </p>
-                </div>
+                  <div className="space-y-1">
+                    <p className="text-sm">
+                      <span className="font-medium">Renter:</span> {renter.renterName}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Room Type:</span> {renter.room.typeName}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Maintenance Type:</span> {expense.maintenanceType}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Price:</span>{" "}
+                      {expense.servicePrice.toLocaleString("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                      })}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Last Payment:</span> {formatDate(expense.lastPaymentDate)}
+                    </p>
+                  </div>
 
-                <button
-                  onClick={() => handleInvoiceClick(expense.serviceInvoice)}
-                  className="mt-2 text-blue-500 hover:text-blue-700 text-sm font-medium">
-                  View Invoice
-                </button>
+                  <button
+                    onClick={() => handleInvoiceClick(expense.serviceInvoice)}
+                    className="mt-2 text-blue-500 hover:text-blue-700 text-sm font-medium">
+                    View Invoice
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            ))
         )}
       </div>
 
