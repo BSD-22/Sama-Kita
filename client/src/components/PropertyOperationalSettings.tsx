@@ -1,11 +1,4 @@
 import { useState, useEffect } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import OperationalSettingsForm from './OperationalSettingsForm';
 import { baseUrl } from '@/constants/baseUrl';
 
@@ -17,7 +10,7 @@ interface Property {
 export default function PropertyOperationalSettings() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
-  const [currentSettings, setCurrentSettings] = useState(null);
+  const [currentSettings, setCurrentSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,6 +19,7 @@ export default function PropertyOperationalSettings() {
 
   useEffect(() => {
     if (selectedPropertyId) {
+      console.log('Selected Property ID:', selectedPropertyId);
       fetchSettings(selectedPropertyId);
     }
   }, [selectedPropertyId]);
@@ -38,8 +32,9 @@ export default function PropertyOperationalSettings() {
         }
       });
       const data = await response.json();
+      console.log('Properties loaded:', data);
       setProperties(data);
-      if (data.length > 0) {
+      if (data.length > 0 && !selectedPropertyId) {
         setSelectedPropertyId(data[0].id);
       }
     } catch (error) {
@@ -55,38 +50,58 @@ export default function PropertyOperationalSettings() {
           'Authorization': `Bearer ${localStorage.access_token}`
         }
       });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch settings: ${response.status}`);
+      }
+      
       const data = await response.json();
-      setCurrentSettings(data);
+      console.log('Settings loaded:', data);
+      
+      // Transform the data to ensure all fields are present
+      const settings = {
+        electricityType: data?.electricityType || 'POSTPAID',
+        waterType: data?.waterType || 'POSTPAID',
+        internetType: data?.internetType || 'POSTPAID',
+        electricityCost: data?.electricityCost ?? 0,
+        waterCost: data?.waterCost ?? 0,
+        internetCost: data?.internetCost ?? 0,
+        electricityDueDay: data?.electricityDueDay ?? 1,
+        waterDueDay: data?.waterDueDay ?? 1,
+        internetDueDay: data?.internetDueDay ?? 1,
+      };
+      
+      setCurrentSettings(settings);
     } catch (error) {
       console.error('Error fetching settings:', error);
+      setCurrentSettings(null);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
+    <div className="max-w-7xl mx-auto px-4">
+      <div className="mb-6">
         <label className="text-sm font-medium">Select Property</label>
-        <Select 
-          onValueChange={(value) => setSelectedPropertyId(Number(value))}
-          value={selectedPropertyId?.toString()}
+        <select
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          value={selectedPropertyId || ''}
+          onChange={(e) => setSelectedPropertyId(Number(e.target.value))}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a property" />
-          </SelectTrigger>
-          <SelectContent>
-            {properties.map((property) => (
-              <SelectItem key={property.id} value={property.id.toString()}>
-                {property.propertyName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <option value="">Select a property</option>
+          {properties.map((property) => (
+            <option key={property.id} value={property.id}>
+              {property.propertyName}
+            </option>
+          ))}
+        </select>
       </div>
 
       {loading ? (
-        <div>Loading settings...</div>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
       ) : (
         selectedPropertyId && (
           <OperationalSettingsForm 
@@ -98,4 +113,4 @@ export default function PropertyOperationalSettings() {
       )}
     </div>
   );
-} 
+}
