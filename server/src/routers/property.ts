@@ -16,5 +16,6 @@ router.put('/:propertyId/edit-room/:roomId', upload.single('roomImage'), propert
 router.get('/occupancies', propertyController.getOcuppancies);
 router.get('/:propertyId/operational-settings', OperationalSettingsController.getSettings);
 router.post('/:propertyId/operational-settings', OperationalSettingsController.updateSettings);
+router.get("/operational-setting", OperationalSettingsController.getOperationalSetting);
 
 export default router;

@@ -56,10 +56,11 @@ export default function PropertyOperationalSettings() {
       }
       
       const data = await response.json();
-      console.log('Settings loaded:', data);
+      console.log('Raw Settings from API:', data);
       
       // Transform the data to ensure all fields are present
       const settings = {
+        propertyId: propertyId,
         electricityType: data?.electricityType || 'POSTPAID',
         waterType: data?.waterType || 'POSTPAID',
         internetType: data?.internetType || 'POSTPAID',
@@ -70,6 +71,8 @@ export default function PropertyOperationalSettings() {
         waterDueDay: data?.waterDueDay ?? 1,
         internetDueDay: data?.internetDueDay ?? 1,
       };
+      
+      console.log('Transformed Settings:', settings);
       
       setCurrentSettings(settings);
     } catch (error) {
