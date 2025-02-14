@@ -175,4 +175,13 @@ export default class OperationalSettingsController {
       next(err);
     }
   }
+
+  static async getOperationalSetting(req: Request, res: Response, next: NextFunction) {
+    try {
+      const settings = await prisma.operationalSettings.findMany();
+      res.status(200).json(settings);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
